@@ -39,12 +39,12 @@ export const POST_freq: HandleRequest<GastoFrecuente> = async (req, res) => {
       return res.status(400).json({ message: 'Token de acceso no válido' })
     }
 
-    const { name, amount, lapse, description } = req.body
+    const { name, amount, lapse, description, isStatic, date } = req.body
     if (
       !name ||
       !amount ||
-      // !date ||
       !lapse ||
+      isStatic === undefined ||
       name.trim() === '' ||
       amount <= 0 ||
       lapse.trim() === ''
@@ -52,11 +52,10 @@ export const POST_freq: HandleRequest<GastoFrecuente> = async (req, res) => {
       return res.status(400).json({ message: 'Datos incompletos' })
     }
 
-    const Today = moment()
-    // date
-    // if (!Day.isValid()) {
-    //   return res.status(400).json({ message: 'Fecha no válida' })
-    // }
+    const Today = moment(date)
+    if (!Today.isValid()) {
+      return res.status(400).json({ message: 'Fecha no válida' })
+    }
     const today = Today.format(FORMATS.SIMPLE_DATE)
     const startOfWeek = getSemStart().format(FORMATS.SIMPLE_DATE)
 
@@ -65,7 +64,7 @@ export const POST_freq: HandleRequest<GastoFrecuente> = async (req, res) => {
       where: { dayDate: today, semana: { user: { usuId: decodedUser.usuId } } },
     })
 
-    let todayId: number | undefined
+    let todayEntity: Day | null = dayFound
 
     if (!dayFound) {
       const semanaFound = await Semanas.findOne({
@@ -88,21 +87,19 @@ export const POST_freq: HandleRequest<GastoFrecuente> = async (req, res) => {
           semana: insertSemanas,
         })
 
-        const insertDay = await dayCreated.save()
+        todayEntity = await dayCreated.save()
 
-        todayId = insertDay.dayId
       } else {
         const dayCreated = Day.create({
           dayDate: today,
           semana: semanaFound,
         })
 
-        const insertDay = await dayCreated.save()
+        todayEntity = await dayCreated.save()
 
-        todayId = insertDay.dayId
       }
     } else {
-      todayId = dayFound.dayId
+      todayEntity = dayFound
     }
 
     const freqCreated = Frecuentes.create({
@@ -110,7 +107,8 @@ export const POST_freq: HandleRequest<GastoFrecuente> = async (req, res) => {
       freDescription: description,
       freAmount: amount,
       freLapse: lapse,
-      day: { dayId: todayId },
+      freIsStatic: isStatic,
+      day: todayEntity,
       user: { usuId: decodedUser.usuId },
     })
 
@@ -279,6 +277,7 @@ export const PUT_freq: HandleRequest<
 
     const freqFound = await Frecuentes.findOne({
       where: { freId: id, user: { usuId: decodedUser.usuId } },
+      relations: { day: true },
     })
 
     if (!freqFound) {

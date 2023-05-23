@@ -35,6 +35,7 @@ export type FrecuenteRow2 = Omit<FrecuenteRow, 'dayId' | 'usuId'>
 
 export type GastoFrecuente = {
   name: string
+  isStatic: boolean
   amount: number
   lapse: LAPSES
   date: string

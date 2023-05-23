@@ -68,6 +68,9 @@ export const createGastoDiario: HandleRequest<{
       where: {
         semEnd,
         semStart,
+        user: {
+          usuId: decodedUser.usuId,
+        }
       },
       relations: {
         days: true,
@@ -135,7 +138,9 @@ export const getGastos: HandleRequest = async (req, res) => {
       return res.status(400).json({ message: 'Token de acceso no válido' })
     }
 
-    //get the last 10 gastos
+    console.log(decodedUser)
+
+    // get last semana days
     const gastos = await Diarios.find({
       where: {
         day: {
@@ -146,11 +151,16 @@ export const getGastos: HandleRequest = async (req, res) => {
           },
         },
       },
+      relations: {
+        day: true,
+      },
       order: {
         diaId: 'DESC',
+
       },
       take: 10,
     })
+
 
     return res.status(200).json({ message: 'Gastos obtenidos', gastos })
   } catch (error) {
@@ -272,6 +282,10 @@ export const getSemanas: HandleRequest<{}, { semana?: string }> = async (
         .where('day.semanaSemId = :semId', { semId })
         .getRawOne()
 
+      console.log({
+        sum,
+        prevWeekFound,
+      })
       totalLastWeek = sum
     }
 
@@ -295,10 +309,10 @@ export const getSemanas: HandleRequest<{}, { semana?: string }> = async (
 
       const { dayId, dayDate } = diafiltered
 
-      const { sum: dayTotal } = (await Diarios.createQueryBuilder('diarios')
+      const dayTotal = (await Diarios.createQueryBuilder('diarios')
         .select('SUM(diarios.diaAmount)', 'sum')
         .where('diarios.dayDayId = :dayId', { dayId })
-        .getRawOne()) ?? { sum: 0 }
+        .getRawOne()).sum ?? 0
 
       if (dayTotal > stadisticInfo.biggestExpense)
         stadisticInfo.biggestExpense = dayTotal
@@ -314,6 +328,10 @@ export const getSemanas: HandleRequest<{}, { semana?: string }> = async (
     stadisticInfo.avgWeek = totalWeek / finalDays.length
 
     stadisticInfo.vsLastWeek = totalLastWeek - totalWeek
+
+    console.log({
+      finalDays
+    })
 
     return res.status(200).json({
       message: 'semanas recuperadas exitosamente',

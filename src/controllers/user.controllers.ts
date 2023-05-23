@@ -90,7 +90,9 @@ export const createUser: HandleReqWithMulter<{
 
     const token = jwt.sign({ ...user }, SECRET)
 
-    return res.send({ message: 'Usuario creado correctamente', user, token })
+    const {usuPassword, ...userWithoutPassword} = user
+
+    return res.send({ message: 'Usuario creado correctamente', user: userWithoutPassword, token })
   } catch (error) {
     console.log('error ->', error)
     if (queryFailedGuard(error)) {
@@ -144,7 +146,9 @@ export const loginUser: HandleRequest<{
 
     const token = jwt.sign({ ...user }, SECRET)
 
-    return res.send({ message: 'Usuario logueado correctamente', user, token })
+    const {usuPassword, ...userWithoutPassword} = user
+
+    return res.send({ message: 'Usuario logueado correctamente', user:userWithoutPassword, token })
   } catch (error) {
     console.log(error)
     return res.status(500).send({ message: 'Error interno ' })
@@ -216,6 +220,7 @@ export const updateUser: HandleRequest<{
     if (!decodedUser.usuId) {
       return res.status(400).json({ message: 'Sesión invalida' })
     }
+    console.log(decodedUser)
 
     const newPasswordHashed = await bcrypt.hash(newPassword, 10)
 
@@ -245,11 +250,15 @@ export const updateUser: HandleRequest<{
       },
     })
 
-    console.log({ updated, updated2 })
+    if (!newUser) {
+      return res.status(400).json({ message: 'Sesión invalida' })
+    }
+
+    const { usuPassword: _, ...userWithoutPassword } = newUser
 
     return res.send({
       message: 'Usuario actualizado correctamente',
-      user: newUser,
+      user: userWithoutPassword,
     })
   } catch (error) {
     console.log(error)

@@ -52,6 +52,13 @@ export class Frecuentes extends BaseEntity {
   })
   freLapse!: LAPSES
 
+  @Column({
+    name: 'freIsStatic',
+    type: 'boolean',
+    default: true,
+  })
+  freIsStatic!: boolean
+
   @ManyToOne(() => Day, (day) => day.frecuentes, {
     cascade: true,
     onDelete: 'CASCADE',
