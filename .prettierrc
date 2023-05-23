@@ -1,0 +1,15 @@
+{
+  "tabWidth": 2,
+  "useTabs": false,
+  "singleQuote": true,
+  "semi": false,
+  "trailingComma": "es5",
+  "jsxSingleQuote": true,
+  "importOrder": [
+    "^[./]",
+    "^@(controllers|models|routes|utils|middlewares|config|DB)",
+    "^[../]"
+  ],
+  "importOrderSeparation": true,
+  "importOrderSortSpecifiers": true
+}
