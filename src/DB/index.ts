@@ -7,6 +7,7 @@ import { Ingresos } from '@entitys/Ingresos'
 import { Semanas } from '@entitys/Semanas'
 import { User } from '@entitys/User'
 import { DataSource } from 'typeorm'
+import { PlatformTools } from 'typeorm/platform/PlatformTools'
 
 import {
   MYSQLDATABASE,
@@ -18,6 +19,7 @@ import {
 
 export const AppDataSource = new DataSource({
   type: 'mysql',
+  driver: PlatformTools.load('mysql2'),
   host: MYSQLHOST,
   port: MYSQLPORT,
   username: MYSQLUSER,

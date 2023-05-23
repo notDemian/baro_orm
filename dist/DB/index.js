@@ -13,9 +13,11 @@ var _Ingresos = require("../entitys/Ingresos.js");
 var _Semanas = require("../entitys/Semanas.js");
 var _User = require("../entitys/User.js");
 var _typeorm = require("typeorm");
+var _PlatformTools = require("typeorm/platform/PlatformTools");
 var _config = require("../config/config.js");
 var AppDataSource = new _typeorm.DataSource({
   type: 'mysql',
+  driver: _PlatformTools.PlatformTools.load('mysql2'),
   host: _config.MYSQLHOST,
   port: _config.MYSQLPORT,
   username: _config.MYSQLUSER,
