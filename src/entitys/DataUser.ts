@@ -27,9 +27,11 @@ export class DataUser extends BaseEntity {
   @Column({
     name: 'datPhoto',
     type: 'varchar',
-    length: 50
+    length: 50,
+    default: 'default_pfp.png'
+
   })
-  datPhoto!: string
+  datPhoto: string
 
   @Column({
     name: 'datProfile',
