@@ -41,12 +41,7 @@ export const createUser: HandleReqWithMulter<{
 }> = async (req, res) => {
   try {
     const { correo, contrasena, nombre, contrasenaConfirmada } = req.body
-    console.log('req.body ->', {
-      correo,
-      contrasena,
-      nombre,
-      contrasenaConfirmada,
-    })
+    
 
     if (!correo || !contrasena || !nombre || !contrasenaConfirmada) {
       return res.status(400).json({ message: 'Faltan datos' })
@@ -68,8 +63,7 @@ export const createUser: HandleReqWithMulter<{
     // if (!req.file) {
     //   return res.status(400).json({ message: 'No hay archivo' })
     // }
-    // const { filename } = req.file
-    const filename = 'default.png'
+    const { filename } = req.file ?? { filename: 'default.png' }
 
     const encryptedPassword = await bcrypt.hash(contrasena, 10)
 
