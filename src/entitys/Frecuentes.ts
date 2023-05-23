@@ -12,22 +12,6 @@ import { Day } from './Day'
 import { CobrosFreq } from './CobrosFreq'
 import { LAPSES } from '@utils/types/Frecuentes/controller'
 
-/**
- * CREATE TABLE `frecuentes` (
-  `freId` int NOT NULL AUTO_INCREMENT,
-  `freName` varchar(50) NOT NULL,
-  `freDescription` varchar(150) DEFAULT NULL,
-  `freAmount` float NOT NULL,
-  `freLapse` varchar(50) NOT NULL,
-  `dayId` int NOT NULL,
-  `usuId` int NOT NULL,
-  PRIMARY KEY (`freId`),
-  KEY `dayIdFre_idx` (`dayId`),
-  CONSTRAINT `dayIdFre` FOREIGN KEY (`dayId`) REFERENCES `day` (`dayId`) ON DELETE CASCADE,
-  KEY `usuId_idx` (`usuId`),
-  CONSTRAINT `usuIdFre` FOREIGN KEY (`usuId`) REFERENCES `usuario` (`usuId`) ON DELETE CASCADE
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb3;
- */
 
 @Entity({
   name: 'frecuentes'

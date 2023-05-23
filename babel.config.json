@@ -1,0 +1,44 @@
+{
+  "presets": [
+    ["@babel/preset-typescript"],
+    [
+      "@babel/preset-env",
+      {
+        "targets": {},
+        "modules": false
+      }
+    ]
+  ],
+  "plugins": [
+    [
+      "@babel/plugin-proposal-decorators",
+      {
+        "version": "legacy"
+      }
+    ],
+    ["@babel/plugin-transform-modules-commonjs"],
+    [
+      "babel-plugin-add-import-extension",
+      {
+        "extension": "js"
+      }
+    ],
+    [
+      "module-resolver",
+      {
+        "root": ["./src"],
+        "extensions": [".js", ".jsx", ".ts", ".tsx"],
+        "alias": {
+          "@controllers": "./src/controllers",
+          "@entitys": "./src/entitys",
+          "@routes": "./src/routes",
+          "@utils": "./src/utils",
+          "@middlewares": "./src/middlewares",
+          "@config": "./src/config",
+          "@DB": "./src/DB",
+          "@services": "./src/services"
+        }
+      }
+    ]
+  ]
+}

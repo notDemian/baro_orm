@@ -4,3 +4,4 @@ node_modules
 .env
 package-lock.json
 local_vs-session.sql
+lib

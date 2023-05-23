@@ -8,19 +8,6 @@ import {
 } from 'typeorm'
 
 import { Day } from './Day'
-/**
- * CREATE TABLE `diarios` (
-  `diaId` int NOT NULL AUTO_INCREMENT,
-  `diaName` varchar(50) NOT NULL,
-  `diaDescription` varchar(150) DEFAULT NULL,
-  `diaAmount` float NOT NULL,
-  `diaIcon` int NOT NULL,
-  `diaCategory` varchar(63) DEFAULT NULL,
-  `dayId` int NOT NULL,
-  PRIMARY KEY (`diaId`),
-  KEY `dayIdDia_idx` (`dayId`),
-  CONSTRAINT `dayIdDia` FOREIGN KEY (`dayId`) REFERENCES `day` (`dayId`) ON DELETE CASCADE
- */
 
 @Entity({
   name: 'diarios'

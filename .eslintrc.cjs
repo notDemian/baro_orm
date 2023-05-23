@@ -11,7 +11,7 @@ module.exports = {
     ecmaVersion: 'latest',
     sourceType: 'module',
   },
-  plugins: ['@typescript-eslint', 'prettier'],
+  plugins: ['@typescript-eslint', 'prettier', 'decorators-legacy'],
   rules: {
     indent: ['error', 2],
     'linebreak-style': ['error', 'windows'],
@@ -28,5 +28,5 @@ module.exports = {
       },
     ],
   },
-  ignorePatterns: ['node_modules', 'lib'],
+  ignorePatterns: ['node_modules', 'lib', 'dist'],
 }

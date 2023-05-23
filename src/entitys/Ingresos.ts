@@ -8,19 +8,6 @@ import {
 } from 'typeorm'
 import { User } from './User'
 import { Ingreso } from '@utils/types/Ingresos'
-/**
- * CREATE TABLE `ingresos` (
-  `ingId` int NOT NULL AUTO_INCREMENT,
-  `ingDate` varchar(50) NOT NULL,
-  `ingType` varchar(150) DEFAULT NULL,
-  `ingAmount` float NOT NULL,
-  `ingDescription` varchar(150) DEFAULT NULL,
-  `usuId` int NOT NULL,
-  PRIMARY KEY (`ingId`),
-  KEY `usuId_idx` (`usuId`),
-  CONSTRAINT `usuIdIng` FOREIGN KEY (`usuId`) REFERENCES `usuario` (`usuId`) ON DELETE CASCADE
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb3;
- */
 
 @Entity({
   name: 'ingresos'
