@@ -35,4 +35,6 @@ export const AppDataSource = new DataSource({
   ],
   // logging: true,
   synchronize: true,
+  migrations: ['src/migrations/*.ts'],
+  migrationsTableName: 'migrations_bd_baro',
 })

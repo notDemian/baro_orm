@@ -1,2 +1,6 @@
-lib
+# lib
 node_modules
+.vscode
+.env
+package-lock.json
+local_vs-session.sql

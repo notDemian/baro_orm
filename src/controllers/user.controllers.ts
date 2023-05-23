@@ -4,8 +4,6 @@ import { User } from '@entitys/User'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 
-import { AppDataSource } from '../DB/index'
-
 import { SECRET } from '@config/config'
 import { delFile } from '@utils/helpers'
 import {
@@ -85,7 +83,7 @@ export const createUser: HandleReqWithMulter<{
     const user = User.create({
       usuEmail: correo,
       usuPassword: encryptedPassword,
-      dataUser,
+      dataUser: dataUser,
     })
 
     await user.save()
@@ -221,14 +219,14 @@ export const updateUser: HandleRequest<{
 
     const newPasswordHashed = await bcrypt.hash(newPassword, 10)
 
-    // const updated = await DataUser.update(
-    //   {
-    //     datId: decodedUser.dataUser.datId,
-    //   },
-    //   {
-    //     datName: name,
-    //   }
-    // )
+    const updated = await DataUser.update(
+      {
+        datId: decodedUser.dataUser.datId,
+      },
+      {
+        datName: name,
+      }
+    )
 
     const updated2 = await User.update(
       {
@@ -237,13 +235,22 @@ export const updateUser: HandleRequest<{
       {
         usuPassword: newPasswordHashed,
         ...(email ? { usuEmail: email } : {}),
-        dataUser: () => `dataUser.datName = '${name}'`,
       }
     )
 
-    console.log({ updated2 })
+    const newUser = await User.findOne({
+      where: { usuId: decodedUser.usuId },
+      relations: {
+        dataUser: true,
+      },
+    })
 
-    return res.send({ message: 'Usuario actualizado correctamente' })
+    console.log({ updated, updated2 })
+
+    return res.send({
+      message: 'Usuario actualizado correctamente',
+      user: newUser,
+    })
   } catch (error) {
     console.log(error)
     return res.status(500).send({ message: 'Error interno' })

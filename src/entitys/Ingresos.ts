@@ -6,8 +6,8 @@ import {
   ManyToOne,
   JoinColumn
 } from 'typeorm'
-import { Day } from './Day'
 import { User } from './User'
+import { Ingreso } from '@utils/types/Ingresos'
 /**
  * CREATE TABLE `ingresos` (
   `ingId` int NOT NULL AUTO_INCREMENT,
@@ -44,7 +44,7 @@ export class Ingresos extends BaseEntity {
     type: 'varchar',
     length: 150
   })
-  ingType!: string
+  ingType!: Ingreso
 
   @Column({
     name: 'ingAmount',

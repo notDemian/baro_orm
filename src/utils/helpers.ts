@@ -1,4 +1,4 @@
-import { unlink } from 'fs/promises'
+import { unlink } from 'fs'
 import { join } from 'path'
 
 import type { COLORS_FREQ } from './types/Frecuentes/controller'
@@ -21,13 +21,7 @@ export const getPriorityColor = (daysTillNextCob: number): COLORS_FREQ => {
 
 export async function delFile(file: string) {
   const dir = join(__dirname, `../public/${file}`)
-  unlink(dir)
-    .then(() => {
-      console.log('Archivo eliminado')
-    })
-    .catch((err) => {
-      console.log(err)
-    })
+  unlink(dir, (err) => {
+    if (err) console.log(err)
+  })
 }
-
-// 1684758654822

@@ -61,7 +61,9 @@ export class Diarios extends BaseEntity {
   @Column({
     name: 'diaCategory',
     type: 'varchar',
-    length: 63
+    length: 63,
+    nullable: true,
+    default: null
   })
   diaCategory!: string
 

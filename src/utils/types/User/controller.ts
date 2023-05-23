@@ -28,3 +28,11 @@ export type DataUserRowData = RowDataPacket & DataUserRow
 
 export type DataUserRowPick<T extends keyof DataUserRow> = RowDataPacket &
   Pick<DataUserRow, T>
+
+export const BARO_SUBSCRIPTIONS = {
+  B2C_Baro_Essentials: 'B2C_Baro_Essentials',
+  B2C_Baro_Deluxe: 'B2C_Baro_Deluxe',
+  B2C_Baro_AI: 'B2C_Baro_AI',
+  B2C_Baro_Family: 'B2C_Baro_Family',
+} as const
+export type SUBSCRIPTIONS = keyof typeof BARO_SUBSCRIPTIONS

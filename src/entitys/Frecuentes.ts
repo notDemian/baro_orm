@@ -10,6 +10,7 @@ import {
 import { User } from './User'
 import { Day } from './Day'
 import { CobrosFreq } from './CobrosFreq'
+import { LAPSES } from '@utils/types/Frecuentes/controller'
 
 /**
  * CREATE TABLE `frecuentes` (
@@ -48,9 +49,11 @@ export class Frecuentes extends BaseEntity {
   @Column({
     name: 'freDescription',
     type: 'varchar',
-    length: 150
+    length: 150,
+    nullable: true,
+    default: null
   })
-  freDescription!: string
+  freDescription: string
 
   @Column({
     name: 'freAmount',
@@ -63,7 +66,7 @@ export class Frecuentes extends BaseEntity {
     type: 'varchar',
     length: 50
   })
-  freLapse!: string
+  freLapse!: LAPSES
 
   @ManyToOne(() => Day, (day) => day.frecuentes, {
     cascade: true,
