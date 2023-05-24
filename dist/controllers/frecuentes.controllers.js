@@ -30,7 +30,7 @@ function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; } /* eslint-disable @typescript-eslint/no-unused-vars */ /* eslint-disable @typescript-eslint/no-empty-function */ /* eslint-disable indent */
 var POST_freq = /*#__PURE__*/function () {
   var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(req, res) {
-    var token, decodedUser, _req$body, name, amount, lapse, description, Today, today, startOfWeek, dayFound, todayId, semanaFound, endOfWeek, semanaCreated, insertSemanas, dayCreated, insertDay, _dayCreated, _insertDay, freqCreated, insertFreq;
+    var token, decodedUser, _req$body, name, amount, lapse, description, isStatic, date, Today, today, startOfWeek, dayFound, todayEntity, semanaFound, endOfWeek, semanaCreated, insertSemanas, dayCreated, _dayCreated, freqCreated, insertFreq;
     return _regeneratorRuntime().wrap(function _callee$(_context) {
       while (1) switch (_context.prev = _context.next) {
         case 0:
@@ -53,10 +53,8 @@ var POST_freq = /*#__PURE__*/function () {
             message: 'Token de acceso no válido'
           }));
         case 7:
-          _req$body = req.body, name = _req$body.name, amount = _req$body.amount, lapse = _req$body.lapse, description = _req$body.description;
-          if (!(!name || !amount ||
-          // !date ||
-          !lapse || name.trim() === '' || amount <= 0 || lapse.trim() === '')) {
+          _req$body = req.body, name = _req$body.name, amount = _req$body.amount, lapse = _req$body.lapse, description = _req$body.description, isStatic = _req$body.isStatic, date = _req$body.date;
+          if (!(!name || !amount || !lapse || isStatic === undefined || name.trim() === '' || amount <= 0 || lapse.trim() === '')) {
             _context.next = 10;
             break;
           }
@@ -64,13 +62,18 @@ var POST_freq = /*#__PURE__*/function () {
             message: 'Datos incompletos'
           }));
         case 10:
-          Today = (0, _moment["default"])(); // date
-          // if (!Day.isValid()) {
-          //   return res.status(400).json({ message: 'Fecha no válida' })
-          // }
+          Today = (0, _moment["default"])(date);
+          if (Today.isValid()) {
+            _context.next = 13;
+            break;
+          }
+          return _context.abrupt("return", res.status(400).json({
+            message: 'Fecha no válida'
+          }));
+        case 13:
           today = Today.format(_Dates.FORMATS.SIMPLE_DATE);
           startOfWeek = (0, _Dates.getSemStart)().format(_Dates.FORMATS.SIMPLE_DATE);
-          _context.next = 15;
+          _context.next = 17;
           return _Day2.Day.findOne({
             relations: {
               semana: true
@@ -84,13 +87,14 @@ var POST_freq = /*#__PURE__*/function () {
               }
             }
           });
-        case 15:
+        case 17:
           dayFound = _context.sent;
+          todayEntity = dayFound;
           if (dayFound) {
-            _context.next = 42;
+            _context.next = 43;
             break;
           }
-          _context.next = 19;
+          _context.next = 22;
           return _Semanas.Semanas.findOne({
             relations: {
               user: true
@@ -102,14 +106,14 @@ var POST_freq = /*#__PURE__*/function () {
               }
             }
           });
-        case 19:
+        case 22:
           semanaFound = _context.sent;
           if (semanaFound) {
-            _context.next = 35;
+            _context.next = 37;
             break;
           }
           endOfWeek = Today.endOf('week').format(_Dates.FORMATS.SIMPLE_DATE);
-          _context.next = 24;
+          _context.next = 27;
           return _Semanas.Semanas.create({
             semStart: startOfWeek,
             semEnd: endOfWeek,
@@ -117,71 +121,68 @@ var POST_freq = /*#__PURE__*/function () {
               usuId: decodedUser.usuId
             }
           });
-        case 24:
-          semanaCreated = _context.sent;
-          _context.next = 27;
-          return semanaCreated.save();
         case 27:
+          semanaCreated = _context.sent;
+          _context.next = 30;
+          return semanaCreated.save();
+        case 30:
           insertSemanas = _context.sent;
           dayCreated = _Day2.Day.create({
             dayDate: today,
             semana: insertSemanas
           });
-          _context.next = 31;
+          _context.next = 34;
           return dayCreated.save();
-        case 31:
-          insertDay = _context.sent;
-          todayId = insertDay.dayId;
-          _context.next = 40;
+        case 34:
+          todayEntity = _context.sent;
+          _context.next = 41;
           break;
-        case 35:
+        case 37:
           _dayCreated = _Day2.Day.create({
             dayDate: today,
             semana: semanaFound
           });
-          _context.next = 38;
+          _context.next = 40;
           return _dayCreated.save();
-        case 38:
-          _insertDay = _context.sent;
-          todayId = _insertDay.dayId;
         case 40:
-          _context.next = 43;
+          todayEntity = _context.sent;
+        case 41:
+          _context.next = 44;
           break;
-        case 42:
-          todayId = dayFound.dayId;
         case 43:
+          todayEntity = dayFound;
+        case 44:
           freqCreated = _Frecuentes.Frecuentes.create({
             freName: name,
             freDescription: description,
             freAmount: amount,
             freLapse: lapse,
-            day: {
-              dayId: todayId
-            },
+            freIsStatic: isStatic,
+            day: todayEntity,
             user: {
               usuId: decodedUser.usuId
             }
           });
-          _context.next = 46;
+          _context.next = 47;
           return freqCreated.save();
-        case 46:
+        case 47:
           insertFreq = _context.sent;
           return _context.abrupt("return", res.status(201).json({
             message: 'Gasto creado',
             gasto: insertFreq
           }));
-        case 50:
-          _context.prev = 50;
+        case 51:
+          _context.prev = 51;
           _context.t0 = _context["catch"](0);
           console.log(_context.t0);
           return _context.abrupt("return", res.status(500).json({
             message: 'Error al crear el gasto'
           }));
-        case 54:
+        case 55:
         case "end":
           return _context.stop();
       }
-    }, _callee, null, [[0, 50]]);
+    }, _callee, null, [[0, 51]]);
   }));
   return function POST_freq(_x, _x2) {
     return _ref.apply(this, arguments);
@@ -473,6 +474,9 @@ var PUT_freq = /*#__PURE__*/function () {
               user: {
                 usuId: decodedUser.usuId
               }
+            },
+            relations: {
+              day: true
             }
           });
         case 21:

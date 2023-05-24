@@ -27,3 +27,7 @@ export const IA_GET_ALL_DIARIOS: HandleRequest = async (req, res) => {
     return res.status(500).json({ message: 'Error en el servidor' })
   }
 }
+
+export const test: HandleRequest = async (req, res) => {
+  return res.status(200).json({ message: 'HOLA MANU', data: req.body })
+}

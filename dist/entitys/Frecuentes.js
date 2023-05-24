@@ -9,7 +9,7 @@ var _typeorm = require("typeorm");
 var _User = require("./User.js");
 var _Day = require("./Day.js");
 var _CobrosFreq = require("./CobrosFreq.js");
-var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _dec8, _dec9, _dec10, _dec11, _class, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, _descriptor7, _descriptor8;
+var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _dec8, _dec9, _dec10, _dec11, _dec12, _class, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, _descriptor7, _descriptor8, _descriptor9;
 function _initializerDefineProperty(target, property, descriptor, context) { if (!descriptor) return; Object.defineProperty(target, property, { enumerable: descriptor.enumerable, configurable: descriptor.configurable, writable: descriptor.writable, value: descriptor.initializer ? descriptor.initializer.call(context) : void 0 }); }
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
@@ -48,7 +48,11 @@ var Frecuentes = (_dec = (0, _typeorm.Entity)({
   name: 'freLapse',
   type: 'varchar',
   length: 50
-}), _dec7 = (0, _typeorm.ManyToOne)(function () {
+}), _dec7 = (0, _typeorm.Column)({
+  name: 'freIsStatic',
+  type: 'boolean',
+  "default": true
+}), _dec8 = (0, _typeorm.ManyToOne)(function () {
   return _Day.Day;
 }, function (day) {
   return day.frecuentes;
@@ -56,7 +60,7 @@ var Frecuentes = (_dec = (0, _typeorm.Entity)({
   cascade: true,
   onDelete: 'CASCADE',
   onUpdate: 'CASCADE'
-}), _dec8 = (0, _typeorm.JoinColumn)(), _dec9 = (0, _typeorm.ManyToOne)(function () {
+}), _dec9 = (0, _typeorm.JoinColumn)(), _dec10 = (0, _typeorm.ManyToOne)(function () {
   return _User.User;
 }, function (user) {
   return user.frecuentes;
@@ -64,7 +68,7 @@ var Frecuentes = (_dec = (0, _typeorm.Entity)({
   cascade: true,
   onDelete: 'CASCADE',
   onUpdate: 'CASCADE'
-}), _dec10 = (0, _typeorm.JoinColumn)(), _dec11 = (0, _typeorm.OneToMany)(function () {
+}), _dec11 = (0, _typeorm.JoinColumn)(), _dec12 = (0, _typeorm.OneToMany)(function () {
   return _CobrosFreq.CobrosFreq;
 }, function (cobros) {
   return cobros.frecuente;
@@ -87,9 +91,10 @@ var Frecuentes = (_dec = (0, _typeorm.Entity)({
     _initializerDefineProperty(_assertThisInitialized(_this), "freDescription", _descriptor3, _assertThisInitialized(_this));
     _initializerDefineProperty(_assertThisInitialized(_this), "freAmount", _descriptor4, _assertThisInitialized(_this));
     _initializerDefineProperty(_assertThisInitialized(_this), "freLapse", _descriptor5, _assertThisInitialized(_this));
-    _initializerDefineProperty(_assertThisInitialized(_this), "day", _descriptor6, _assertThisInitialized(_this));
-    _initializerDefineProperty(_assertThisInitialized(_this), "user", _descriptor7, _assertThisInitialized(_this));
-    _initializerDefineProperty(_assertThisInitialized(_this), "cobros", _descriptor8, _assertThisInitialized(_this));
+    _initializerDefineProperty(_assertThisInitialized(_this), "freIsStatic", _descriptor6, _assertThisInitialized(_this));
+    _initializerDefineProperty(_assertThisInitialized(_this), "day", _descriptor7, _assertThisInitialized(_this));
+    _initializerDefineProperty(_assertThisInitialized(_this), "user", _descriptor8, _assertThisInitialized(_this));
+    _initializerDefineProperty(_assertThisInitialized(_this), "cobros", _descriptor9, _assertThisInitialized(_this));
     return _this;
   }
   return _createClass(Frecuentes);
@@ -118,17 +123,22 @@ var Frecuentes = (_dec = (0, _typeorm.Entity)({
   enumerable: true,
   writable: true,
   initializer: null
-}), _descriptor6 = _applyDecoratedDescriptor(_class2.prototype, "day", [_dec7, _dec8], {
+}), _descriptor6 = _applyDecoratedDescriptor(_class2.prototype, "freIsStatic", [_dec7], {
   configurable: true,
   enumerable: true,
   writable: true,
   initializer: null
-}), _descriptor7 = _applyDecoratedDescriptor(_class2.prototype, "user", [_dec9, _dec10], {
+}), _descriptor7 = _applyDecoratedDescriptor(_class2.prototype, "day", [_dec8, _dec9], {
   configurable: true,
   enumerable: true,
   writable: true,
   initializer: null
-}), _descriptor8 = _applyDecoratedDescriptor(_class2.prototype, "cobros", [_dec11], {
+}), _descriptor8 = _applyDecoratedDescriptor(_class2.prototype, "user", [_dec10, _dec11], {
+  configurable: true,
+  enumerable: true,
+  writable: true,
+  initializer: null
+}), _descriptor9 = _applyDecoratedDescriptor(_class2.prototype, "cobros", [_dec12], {
   configurable: true,
   enumerable: true,
   writable: true,

@@ -98,7 +98,10 @@ var createGastoDiario = /*#__PURE__*/function () {
           return _Semanas.Semanas.findOne({
             where: {
               semEnd: semEnd,
-              semStart: semStart
+              semStart: semStart,
+              user: {
+                usuId: decodedUser.usuId
+              }
             },
             relations: {
               days: true
@@ -211,7 +214,10 @@ var getGastos = /*#__PURE__*/function () {
             message: 'Token de acceso no válido'
           }));
         case 7:
-          _context2.next = 9;
+          console.log(decodedUser);
+
+          // get last semana days
+          _context2.next = 10;
           return _Diarios.Diarios.find({
             where: {
               day: {
@@ -222,29 +228,32 @@ var getGastos = /*#__PURE__*/function () {
                 }
               }
             },
+            relations: {
+              day: true
+            },
             order: {
               diaId: 'DESC'
             },
             take: 10
           });
-        case 9:
+        case 10:
           gastos = _context2.sent;
           return _context2.abrupt("return", res.status(200).json({
             message: 'Gastos obtenidos',
             gastos: gastos
           }));
-        case 13:
-          _context2.prev = 13;
+        case 14:
+          _context2.prev = 14;
           _context2.t0 = _context2["catch"](0);
           console.log(_context2.t0);
           return _context2.abrupt("return", res.status(500).json({
             message: 'Error interno'
           }));
-        case 17:
+        case 18:
         case "end":
           return _context2.stop();
       }
-    }, _callee2, null, [[0, 13]]);
+    }, _callee2, null, [[0, 14]]);
   }));
   return function getGastos(_x3, _x4) {
     return _ref2.apply(this, arguments);
@@ -362,7 +371,7 @@ var getSemanas = /*#__PURE__*/function () {
           prevWeek = prevWeekFound ? prevWeek : null;
           totalLastWeek = 0;
           if (!prevWeekFound) {
-            _context4.next = 42;
+            _context4.next = 43;
             break;
           }
           semId = prevWeekFound.semId;
@@ -373,12 +382,16 @@ var getSemanas = /*#__PURE__*/function () {
         case 39:
           _yield$Diarios$create = _context4.sent;
           sum = _yield$Diarios$create.sum;
+          console.log({
+            sum: sum,
+            prevWeekFound: prevWeekFound
+          });
           totalLastWeek = sum;
-        case 42:
+        case 43:
           finalDays = [];
           _loop = /*#__PURE__*/_regeneratorRuntime().mark(function _loop() {
             var _yield$Diarios$create2;
-            var e, diafiltered, dayId, dayDate, _ref4, dayTotal;
+            var e, diafiltered, dayId, dayDate, dayTotal;
             return _regeneratorRuntime().wrap(function _loop$(_context3) {
               while (1) switch (_context3.prev = _context3.next) {
                 case 0:
@@ -403,7 +416,7 @@ var getSemanas = /*#__PURE__*/function () {
                     dayId: dayId
                   }).getRawOne();
                 case 8:
-                  _context3.t1 = _yield$Diarios$create2 = _context3.sent;
+                  _context3.t1 = _yield$Diarios$create2 = _context3.sent.sum;
                   _context3.t0 = _context3.t1 !== null;
                   if (!_context3.t0) {
                     _context3.next = 12;
@@ -419,49 +432,49 @@ var getSemanas = /*#__PURE__*/function () {
                   _context3.next = 17;
                   break;
                 case 16:
-                  _context3.t2 = {
-                    sum: 0
-                  };
+                  _context3.t2 = 0;
                 case 17:
-                  _ref4 = _context3.t2;
-                  dayTotal = _ref4.sum;
+                  dayTotal = _context3.t2;
                   if (dayTotal > stadisticInfo.biggestExpense) stadisticInfo.biggestExpense = dayTotal;
                   finalDays.push({
                     dayId: dayId,
                     dayDate: dayDate,
                     dayTotal: dayTotal
                   });
-                case 21:
+                case 20:
                 case "end":
                   return _context3.stop();
               }
             }, _loop);
           });
           _i = 0, _dates = dates;
-        case 45:
+        case 46:
           if (!(_i < _dates.length)) {
-            _context4.next = 53;
+            _context4.next = 54;
             break;
           }
-          return _context4.delegateYield(_loop(), "t0", 47);
-        case 47:
+          return _context4.delegateYield(_loop(), "t0", 48);
+        case 48:
           _ret = _context4.t0;
           if (!(_ret === "continue")) {
-            _context4.next = 50;
+            _context4.next = 51;
             break;
           }
-          return _context4.abrupt("continue", 50);
-        case 50:
+          return _context4.abrupt("continue", 51);
+        case 51:
           _i++;
-          _context4.next = 45;
+          _context4.next = 46;
           break;
-        case 53:
+        case 54:
           totalWeek = finalDays.reduce(function (acc, e) {
             if (e) return acc + e.dayTotal;
             return acc;
           }, 0);
           stadisticInfo.avgWeek = totalWeek / finalDays.length;
           stadisticInfo.vsLastWeek = totalLastWeek - totalWeek;
+          console.log({
+            finalDays: finalDays
+          });
           return _context4.abrupt("return", res.status(200).json({
             message: 'semanas recuperadas exitosamente',
             finalDays: finalDays,
@@ -470,18 +483,18 @@ var getSemanas = /*#__PURE__*/function () {
             prevWeek: prevWeek,
             stadisticInfo: stadisticInfo
           }));
-        case 59:
-          _context4.prev = 59;
+        case 61:
+          _context4.prev = 61;
           _context4.t1 = _context4["catch"](0);
           console.log(_context4.t1);
           return _context4.abrupt("return", res.status(500).json({
             message: 'Error interno'
           }));
-        case 63:
+        case 65:
         case "end":
           return _context4.stop();
       }
-    }, _callee3, null, [[0, 59]]);
+    }, _callee3, null, [[0, 61]]);
   }));
   return function getSemanas(_x5, _x6) {
     return _ref3.apply(this, arguments);
@@ -489,7 +502,7 @@ var getSemanas = /*#__PURE__*/function () {
 }();
 exports.getSemanas = getSemanas;
 var getDay = /*#__PURE__*/function () {
-  var _ref5 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4(req, res) {
+  var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4(req, res) {
     var _lastDayFound$diarios, day, token, decodedUser, Today, FormatDay, lastDay, nextDay, _yield$Promise$allSet, _yield$Promise$allSet2, dayFoundRes, lastDayFoundRes, nextDayFoundRes, dayFound, lastDayFound, nextDayFound, days, totalLastDay, totalToday, mostExpensiveCharge, diffDays, avgDay, byAmount, dayName;
     return _regeneratorRuntime().wrap(function _callee4$(_context5) {
       while (1) switch (_context5.prev = _context5.next) {
@@ -643,12 +656,12 @@ var getDay = /*#__PURE__*/function () {
     }, _callee4, null, [[0, 40]]);
   }));
   return function getDay(_x7, _x8) {
-    return _ref5.apply(this, arguments);
+    return _ref4.apply(this, arguments);
   };
 }();
 exports.getDay = getDay;
 var updateGasto = /*#__PURE__*/function () {
-  var _ref6 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee5(req, res) {
+  var _ref5 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee5(req, res) {
     var _req$body2, newDescripcion, newMonto, newIcono, newNombre, id, token, decodedUser, _yield$getBalance, _yield$getBalance2, datBalance, err, diarioFound, diaAmount, delta, newBalance, updatedDiario, updatedBalance;
     return _regeneratorRuntime().wrap(function _callee5$(_context6) {
       while (1) switch (_context6.prev = _context6.next) {
@@ -784,7 +797,7 @@ var updateGasto = /*#__PURE__*/function () {
     }, _callee5, null, [[5, 43]]);
   }));
   return function updateGasto(_x9, _x10) {
-    return _ref6.apply(this, arguments);
+    return _ref5.apply(this, arguments);
   };
 }();
 exports.updateGasto = updateGasto;

@@ -13,7 +13,12 @@ var _jsonwebtoken = _interopRequireDefault(require("jsonwebtoken"));
 var _config = require("../config/config.js");
 var _helpers = require("../utils/helpers.js");
 var _helpers2 = require("../utils/types/helpers.js");
+var _excluded = ["usuPassword"],
+  _excluded2 = ["usuPassword"],
+  _excluded3 = ["usuPassword"];
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+function _objectWithoutProperties(source, excluded) { if (source == null) return {}; var target = _objectWithoutPropertiesLoose(source, excluded); var key, i; if (Object.getOwnPropertySymbols) { var sourceSymbolKeys = Object.getOwnPropertySymbols(source); for (i = 0; i < sourceSymbolKeys.length; i++) { key = sourceSymbolKeys[i]; if (excluded.indexOf(key) >= 0) continue; if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue; target[key] = source[key]; } } return target; }
+function _objectWithoutPropertiesLoose(source, excluded) { if (source == null) return {}; var target = {}; var sourceKeys = Object.keys(source); var key, i; for (i = 0; i < sourceKeys.length; i++) { key = sourceKeys[i]; if (excluded.indexOf(key) >= 0) continue; target[key] = source[key]; } return target; }
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
 function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
@@ -65,86 +70,82 @@ var _getAllUsers = /*#__PURE__*/function () {
 exports._getAllUsers = _getAllUsers;
 var createUser = /*#__PURE__*/function () {
   var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(req, res) {
-    var _req$body, correo, contrasena, nombre, contrasenaConfirmada, filename, encryptedPassword, dataUser, user, token;
+    var _req$file, _req$body, correo, contrasena, nombre, contrasenaConfirmada, _ref3, filename, encryptedPassword, dataUser, user, token, usuPassword, userWithoutPassword;
     return _regeneratorRuntime().wrap(function _callee2$(_context2) {
       while (1) switch (_context2.prev = _context2.next) {
         case 0:
           _context2.prev = 0;
           _req$body = req.body, correo = _req$body.correo, contrasena = _req$body.contrasena, nombre = _req$body.nombre, contrasenaConfirmada = _req$body.contrasenaConfirmada;
-          console.log('req.body ->', {
-            correo: correo,
-            contrasena: contrasena,
-            nombre: nombre,
-            contrasenaConfirmada: contrasenaConfirmada
-          });
           if (!(!correo || !contrasena || !nombre || !contrasenaConfirmada)) {
-            _context2.next = 5;
+            _context2.next = 4;
             break;
           }
           return _context2.abrupt("return", res.status(400).json({
             message: 'Faltan datos'
           }));
-        case 5:
+        case 4:
           if (!(contrasena.length > 32 || correo.length < 8)) {
-            _context2.next = 7;
+            _context2.next = 6;
             break;
           }
           return _context2.abrupt("return", res.status(400).json({
             message: 'Datos inválidos'
           }));
-        case 7:
+        case 6:
           if (!(!correo.includes('@') || !correo.includes('.') || correo.length > 50)) {
-            _context2.next = 9;
+            _context2.next = 8;
             break;
           }
           return _context2.abrupt("return", res.status(400).json({
             message: 'Correo inválido'
           }));
-        case 9:
+        case 8:
           if (!(nombre.length > 70 || nombre.length < 3)) {
-            _context2.next = 11;
+            _context2.next = 10;
             break;
           }
           return _context2.abrupt("return", res.status(400).json({
             message: 'Nombre inválido'
           }));
-        case 11:
+        case 10:
           if (!(contrasena != contrasenaConfirmada)) {
-            _context2.next = 13;
+            _context2.next = 12;
             break;
           }
           return _context2.abrupt("return", res.status(400).json({
             message: 'Las contrasenas deben coincidir'
           }));
-        case 13:
+        case 12:
           // if (!req.file) {
           //   return res.status(400).json({ message: 'No hay archivo' })
           // }
-          // const { filename } = req.file
-          filename = 'default.png';
-          _context2.next = 16;
+          _ref3 = (_req$file = req.file) !== null && _req$file !== void 0 ? _req$file : {
+            filename: 'default.png'
+          }, filename = _ref3.filename;
+          _context2.next = 15;
           return _bcrypt["default"].hash(contrasena, 10);
-        case 16:
+        case 15:
           encryptedPassword = _context2.sent;
           dataUser = _DataUser.DataUser.create({
             datName: nombre,
             datPhoto: filename
           });
-          _context2.next = 20;
+          _context2.next = 19;
           return dataUser.save();
-        case 20:
+        case 19:
           user = _User.User.create({
             usuEmail: correo,
             usuPassword: encryptedPassword,
             dataUser: dataUser
           });
-          _context2.next = 23;
+          _context2.next = 22;
           return user.save();
-        case 23:
+        case 22:
           token = _jsonwebtoken["default"].sign(_objectSpread({}, user), _config.SECRET);
+          usuPassword = user.usuPassword, userWithoutPassword = _objectWithoutProperties(user, _excluded);
           return _context2.abrupt("return", res.send({
             message: 'Usuario creado correctamente',
-            user: user,
+            user: userWithoutPassword,
             token: token
           }));
         case 27:
@@ -182,8 +183,8 @@ var createUser = /*#__PURE__*/function () {
 }();
 exports.createUser = createUser;
 var loginUser = /*#__PURE__*/function () {
-  var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3(req, res) {
-    var _req$body2, correo, contraseña, user, match, token;
+  var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3(req, res) {
+    var _req$body2, correo, contraseña, user, match, token, usuPassword, userWithoutPassword;
     return _regeneratorRuntime().wrap(function _callee3$(_context3) {
       while (1) switch (_context3.prev = _context3.next) {
         case 0:
@@ -245,31 +246,32 @@ var loginUser = /*#__PURE__*/function () {
           }));
         case 18:
           token = _jsonwebtoken["default"].sign(_objectSpread({}, user), _config.SECRET);
+          usuPassword = user.usuPassword, userWithoutPassword = _objectWithoutProperties(user, _excluded2);
           return _context3.abrupt("return", res.send({
             message: 'Usuario logueado correctamente',
-            user: user,
+            user: userWithoutPassword,
             token: token
           }));
-        case 22:
-          _context3.prev = 22;
+        case 23:
+          _context3.prev = 23;
           _context3.t0 = _context3["catch"](0);
           console.log(_context3.t0);
           return _context3.abrupt("return", res.status(500).send({
             message: 'Error interno '
           }));
-        case 26:
+        case 27:
         case "end":
           return _context3.stop();
       }
-    }, _callee3, null, [[0, 22]]);
+    }, _callee3, null, [[0, 23]]);
   }));
   return function loginUser(_x5, _x6) {
-    return _ref3.apply(this, arguments);
+    return _ref4.apply(this, arguments);
   };
 }();
 exports.loginUser = loginUser;
 var updatePhoto = /*#__PURE__*/function () {
-  var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4(req, res) {
+  var _ref5 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4(req, res) {
     var filename, token, decoded, userUpdated;
     return _regeneratorRuntime().wrap(function _callee4$(_context4) {
       while (1) switch (_context4.prev = _context4.next) {
@@ -347,13 +349,13 @@ var updatePhoto = /*#__PURE__*/function () {
     }, _callee4, null, [[0, 25]]);
   }));
   return function updatePhoto(_x7, _x8) {
-    return _ref4.apply(this, arguments);
+    return _ref5.apply(this, arguments);
   };
 }();
 exports.updatePhoto = updatePhoto;
 var updateUser = /*#__PURE__*/function () {
-  var _ref5 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee5(req, res) {
-    var _req$body3, name, newPassword, newPasswordConfirmed, email, token, decodedUser, newPasswordHashed, updated, updated2, newUser;
+  var _ref6 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee5(req, res) {
+    var _req$body3, name, newPassword, newPasswordConfirmed, email, token, decodedUser, newPasswordHashed, updated, updated2, newUser, _, userWithoutPassword;
     return _regeneratorRuntime().wrap(function _callee5$(_context5) {
       while (1) switch (_context5.prev = _context5.next) {
         case 0:
@@ -393,19 +395,20 @@ var updateUser = /*#__PURE__*/function () {
             message: 'Sesión invalida'
           }));
         case 12:
-          _context5.next = 14;
+          console.log(decodedUser);
+          _context5.next = 15;
           return _bcrypt["default"].hash(newPassword, 10);
-        case 14:
+        case 15:
           newPasswordHashed = _context5.sent;
-          _context5.next = 17;
+          _context5.next = 18;
           return _DataUser.DataUser.update({
             datId: decodedUser.dataUser.datId
           }, {
             datName: name
           });
-        case 17:
+        case 18:
           updated = _context5.sent;
-          _context5.next = 20;
+          _context5.next = 21;
           return _User.User.update({
             usuId: decodedUser.usuId
           }, _objectSpread({
@@ -413,9 +416,9 @@ var updateUser = /*#__PURE__*/function () {
           }, email ? {
             usuEmail: email
           } : {}));
-        case 20:
+        case 21:
           updated2 = _context5.sent;
-          _context5.next = 23;
+          _context5.next = 24;
           return _User.User.findOne({
             where: {
               usuId: decodedUser.usuId
@@ -424,36 +427,41 @@ var updateUser = /*#__PURE__*/function () {
               dataUser: true
             }
           });
-        case 23:
+        case 24:
           newUser = _context5.sent;
-          console.log({
-            updated: updated,
-            updated2: updated2
-          });
+          if (newUser) {
+            _context5.next = 27;
+            break;
+          }
+          return _context5.abrupt("return", res.status(400).json({
+            message: 'Sesión invalida'
+          }));
+        case 27:
+          _ = newUser.usuPassword, userWithoutPassword = _objectWithoutProperties(newUser, _excluded3);
           return _context5.abrupt("return", res.send({
             message: 'Usuario actualizado correctamente',
-            user: newUser
+            user: userWithoutPassword
           }));
-        case 28:
-          _context5.prev = 28;
+        case 31:
+          _context5.prev = 31;
           _context5.t0 = _context5["catch"](0);
           console.log(_context5.t0);
           return _context5.abrupt("return", res.status(500).send({
             message: 'Error interno'
           }));
-        case 32:
+        case 35:
         case "end":
           return _context5.stop();
       }
-    }, _callee5, null, [[0, 28]]);
+    }, _callee5, null, [[0, 31]]);
   }));
   return function updateUser(_x9, _x10) {
-    return _ref5.apply(this, arguments);
+    return _ref6.apply(this, arguments);
   };
 }();
 exports.updateUser = updateUser;
 var logout = /*#__PURE__*/function () {
-  var _ref6 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee6(req, res) {
+  var _ref7 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee6(req, res) {
     return _regeneratorRuntime().wrap(function _callee6$(_context6) {
       while (1) switch (_context6.prev = _context6.next) {
         case 0:
@@ -484,12 +492,12 @@ var logout = /*#__PURE__*/function () {
     }, _callee6, null, [[0, 7]]);
   }));
   return function logout(_x11, _x12) {
-    return _ref6.apply(this, arguments);
+    return _ref7.apply(this, arguments);
   };
 }();
 exports.logout = logout;
 var cleanAccount = /*#__PURE__*/function () {
-  var _ref7 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee7(req, res) {
+  var _ref8 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee7(req, res) {
     var token, decoded, semanas;
     return _regeneratorRuntime().wrap(function _callee7$(_context7) {
       while (1) switch (_context7.prev = _context7.next) {
@@ -551,12 +559,12 @@ var cleanAccount = /*#__PURE__*/function () {
     }, _callee7, null, [[0, 17]]);
   }));
   return function cleanAccount(_x13, _x14) {
-    return _ref7.apply(this, arguments);
+    return _ref8.apply(this, arguments);
   };
 }();
 exports.cleanAccount = cleanAccount;
 var deleteAccount = /*#__PURE__*/function () {
-  var _ref8 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee8(req, res) {
+  var _ref9 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee8(req, res) {
     var password, token, decoded, user, match;
     return _regeneratorRuntime().wrap(function _callee8$(_context8) {
       while (1) switch (_context8.prev = _context8.next) {
@@ -654,7 +662,7 @@ var deleteAccount = /*#__PURE__*/function () {
     }, _callee8, null, [[0, 28]]);
   }));
   return function deleteAccount(_x15, _x16) {
-    return _ref8.apply(this, arguments);
+    return _ref9.apply(this, arguments);
   };
 }();
 exports.deleteAccount = deleteAccount;

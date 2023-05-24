@@ -9,5 +9,6 @@ var _iaControllers = require("../controllers/ia.controllers.js");
 var router = (0, _express.Router)();
 router.get('/getAllFreq', _iaControllers.IA_GET_ALL_FREQ);
 router.get('/getAllDiarios', _iaControllers.IA_GET_ALL_DIARIOS);
+router.post('/test', _iaControllers.test);
 var _default = router;
 exports["default"] = _default;
