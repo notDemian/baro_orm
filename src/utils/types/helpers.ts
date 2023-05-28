@@ -1,5 +1,8 @@
+import { User } from '@entitys/User'
 import type { RequestHandler } from 'express'
 import { QueryFailedError } from 'typeorm'
+
+// make the HandleRequest type req.user exists and is type User
 
 export type HandleRequest<body = unknown, params = unknown> = RequestHandler<
   params,

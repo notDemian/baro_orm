@@ -6,6 +6,8 @@ Object.defineProperty(exports, "__esModule", {
 exports.assertNever = assertNever;
 exports.queryFailedGuard = void 0;
 var _typeorm = require("typeorm");
+// make the HandleRequest type req.user exists and is type User
+
 function assertNever(value) {
   throw new Error("Unhandled discriminated union member: ".concat(JSON.stringify(value)));
 }

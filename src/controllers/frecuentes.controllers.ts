@@ -6,44 +6,40 @@ import { Day } from '@entitys/Day'
 import { Frecuentes } from '@entitys/Frecuentes'
 import { Semanas } from '@entitys/Semanas'
 import { User } from '@entitys/User'
+import axios from 'axios'
 import jwt from 'jsonwebtoken'
 
 /* eslint-disable indent */
 import moment, { Moment } from 'moment/moment.js'
 import type { OkPacket, RowDataPacket } from 'mysql2'
 
-import { SECRET } from '@config/config'
+import { Frecuente } from '../utils/types/Frecuentes/controller'
+
+import { API_IA_URL, SECRET } from '@config/config'
 import { FORMATS, getSemStart } from '@utils/Dates'
 import { isNumber } from '@utils/Numbers'
 import { getPriorityColor } from '@utils/helpers'
 import { DayRow } from '@utils/types/Day/controller'
 import {
   COLORS_FREQ,
-  Cobros_FreRow,
-  Frecuente,
-  FrecuenteRow,
   GastoFrecuente,
   LAPSES_TO_INT,
 } from '@utils/types/Frecuentes/controller'
+import { GetClassificationResponse } from '@utils/types/IA'
 import { SemanasRow } from '@utils/types/Semanas/controller'
 import { HandleRequest } from '@utils/types/helpers'
 
 export const POST_freq: HandleRequest<GastoFrecuente> = async (req, res) => {
   try {
-    const token = req.get('token')
-    if (!token) {
-      return res.status(400).json({ message: 'Token de acceso no válido' })
-    }
-    const decodedUser = jwt.verify(token, SECRET) as User
-    if (!decodedUser.usuId) {
-      return res.status(400).json({ message: 'Token de acceso no válido' })
-    }
+    const rUser = res.locals.user
+    if (!rUser) return res.status(400).json({ message: 'Sesión invalida' })
 
     const { name, amount, lapse, description, isStatic, date } = req.body
     if (
       !name ||
       !amount ||
       !lapse ||
+      !description ||
       isStatic === undefined ||
       name.trim() === '' ||
       amount <= 0 ||
@@ -61,7 +57,7 @@ export const POST_freq: HandleRequest<GastoFrecuente> = async (req, res) => {
 
     const dayFound = await Day.findOne({
       relations: { semana: true },
-      where: { dayDate: today, semana: { user: { usuId: decodedUser.usuId } } },
+      where: { dayDate: today, semana: { user: { usuId: rUser.usuId } } },
     })
 
     let todayEntity: Day | null = dayFound
@@ -69,7 +65,7 @@ export const POST_freq: HandleRequest<GastoFrecuente> = async (req, res) => {
     if (!dayFound) {
       const semanaFound = await Semanas.findOne({
         relations: { user: true },
-        where: { semStart: startOfWeek, user: { usuId: decodedUser.usuId } },
+        where: { semStart: startOfWeek, user: { usuId: rUser.usuId } },
       })
 
       if (!semanaFound) {
@@ -77,7 +73,7 @@ export const POST_freq: HandleRequest<GastoFrecuente> = async (req, res) => {
         const semanaCreated = await Semanas.create({
           semStart: startOfWeek,
           semEnd: endOfWeek,
-          user: { usuId: decodedUser.usuId },
+          user: { usuId: rUser.usuId },
         })
 
         const insertSemanas = await semanaCreated.save()
@@ -88,7 +84,6 @@ export const POST_freq: HandleRequest<GastoFrecuente> = async (req, res) => {
         })
 
         todayEntity = await dayCreated.save()
-
       } else {
         const dayCreated = Day.create({
           dayDate: today,
@@ -96,7 +91,6 @@ export const POST_freq: HandleRequest<GastoFrecuente> = async (req, res) => {
         })
 
         todayEntity = await dayCreated.save()
-
       }
     } else {
       todayEntity = dayFound
@@ -109,8 +103,20 @@ export const POST_freq: HandleRequest<GastoFrecuente> = async (req, res) => {
       freLapse: lapse,
       freIsStatic: isStatic,
       day: todayEntity,
-      user: { usuId: decodedUser.usuId },
+      user: { usuId: rUser.usuId },
     })
+
+    try {
+      const resIA = await axios.post<GetClassificationResponse>(
+        `${API_IA_URL}/api/classification/freq`,
+        freqCreated
+      )
+      console.log({ data: resIA.data })
+      if (resIA && resIA.data && resIA.data.classification)
+        freqCreated.freCategory = resIA.data.classification
+    } catch (error) {
+      console.log(error)
+    }
 
     const insertFreq = await freqCreated.save()
     return res.status(201).json({
@@ -125,18 +131,12 @@ export const POST_freq: HandleRequest<GastoFrecuente> = async (req, res) => {
 
 export const GET_ALL_freq: HandleRequest = async (req, res) => {
   try {
-    const token = req.get('token')
-    if (!token) {
-      return res.status(400).json({ message: 'Token de acceso no válido' })
-    }
-    const decodedUser = jwt.verify(token, SECRET) as User
-    if (!decodedUser.usuId) {
-      return res.status(400).json({ message: 'Token de acceso no válido' })
-    }
+    const rUser = res.locals.user
+    if (!rUser) return res.status(400).json({ message: 'Sesión invalida' })
 
     const frecuentesFound = await Frecuentes.find({
       relations: { day: true },
-      where: { user: { usuId: decodedUser.usuId } },
+      where: { user: { usuId: rUser.usuId } },
     })
 
     const Day = moment()
@@ -210,18 +210,12 @@ export const GET_freq: HandleRequest<{}, { id?: string }> = async (
       return res.status(400).json({ message: 'Id no válido' })
     }
 
-    const token = req.get('token')
-    if (!token) {
-      return res.status(400).json({ message: 'Token de acceso no válido' })
-    }
-    const decodedUser = jwt.verify(token, SECRET) as User
-    if (!decodedUser.usuId) {
-      return res.status(400).json({ message: 'Token de acceso no válido' })
-    }
+    const rUser = res.locals.user
+    if (!rUser) return res.status(400).json({ message: 'Sesión invalida' })
 
     const freqFound = await Frecuentes.findOne({
       relations: { day: true },
-      where: { freId: id, user: { usuId: decodedUser.usuId } },
+      where: { freId: id, user: { usuId: rUser.usuId } },
     })
 
     if (!freqFound) {
@@ -266,17 +260,11 @@ export const PUT_freq: HandleRequest<
     if (name && name.trim() === '')
       return res.status(400).json({ message: 'El nombre no debe estar vacío' })
 
-    const token = req.get('token')
-    if (!token) {
-      return res.status(400).json({ message: 'Token de acceso no válido' })
-    }
-    const decodedUser = jwt.verify(token, SECRET) as User
-    if (!decodedUser.usuId) {
-      return res.status(400).json({ message: 'Token de acceso no válido' })
-    }
+    const rUser = res.locals.user
+    if (!rUser) return res.status(400).json({ message: 'Sesión invalida' })
 
     const freqFound = await Frecuentes.findOne({
-      where: { freId: id, user: { usuId: decodedUser.usuId } },
+      where: { freId: id, user: { usuId: rUser.usuId } },
       relations: { day: true },
     })
 
@@ -320,14 +308,8 @@ export const DELETE_freq: HandleRequest<{}, { id?: unknown }> = async (
       return res.status(400).json({ message: 'Id no válido' })
     }
 
-    const token = req.get('token')
-    if (!token) {
-      return res.status(400).json({ message: 'Token de acceso no válido' })
-    }
-    const decodedUser = jwt.verify(token, SECRET) as User
-    if (!decodedUser.usuId) {
-      return res.status(400).json({ message: 'Token de acceso no válido' })
-    }
+    const rUser = res.locals.user
+    if (!rUser) return res.status(400).json({ message: 'Sesión invalida' })
 
     const removedFreq = await Frecuentes.createQueryBuilder('frecuentes')
       .delete()
@@ -345,5 +327,36 @@ export const DELETE_freq: HandleRequest<{}, { id?: unknown }> = async (
   } catch (error) {
     console.log(error)
     return res.status(500).json({ message: 'Error al eliminar el gasto' })
+  }
+}
+
+export const getCobrosFreq: HandleRequest<undefined, { id?: unknown }> = async (
+  req,
+  res
+) => {
+  try {
+    const { id } = req.params
+    if (!id || !isNumber(id)) {
+      return res.status(400).json({ message: 'Id no válido' })
+    }
+
+    const rUser = res.locals.user
+    if (!rUser) return res.status(400).json({ message: 'Sesión invalida' })
+
+    const freqFound = await Frecuentes.findOne({
+      relations: { cobros: true },
+      where: { freId: id, user: { usuId: rUser.usuId } },
+    })
+
+    if (!freqFound) {
+      return res.status(404).json({ message: 'Gasto frecuente no encontrado' })
+    }
+
+    return res
+      .status(200)
+      .json({ message: 'Cobros obtenidos', freq: freqFound })
+  } catch (error) {
+    console.log(error)
+    return res.status(500).json({ message: 'Error al obtener los cobros' })
   }
 }

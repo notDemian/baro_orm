@@ -7,7 +7,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.CobrosFreq = void 0;
 var _typeorm = require("typeorm");
 var _Frecuentes = require("./Frecuentes.js");
-var _dec, _dec2, _dec3, _dec4, _dec5, _class, _class2, _descriptor, _descriptor2, _descriptor3;
+var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _class, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4;
 function _initializerDefineProperty(target, property, descriptor, context) { if (!descriptor) return; Object.defineProperty(target, property, { enumerable: descriptor.enumerable, configurable: descriptor.configurable, writable: descriptor.writable, value: descriptor.initializer ? descriptor.initializer.call(context) : void 0 }); }
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
@@ -33,11 +33,16 @@ var CobrosFreq = (_dec = (0, _typeorm.Entity)({
   name: 'cobDate',
   type: 'varchar',
   length: 20
-}), _dec4 = (0, _typeorm.ManyToOne)(function () {
+}), _dec4 = (0, _typeorm.Column)({
+  name: 'cobAmount',
+  type: 'int',
+  nullable: true,
+  "default": null
+}), _dec5 = (0, _typeorm.ManyToOne)(function () {
   return _Frecuentes.Frecuentes;
 }, function (freq) {
   return freq.cobros;
-}), _dec5 = (0, _typeorm.JoinColumn)(), _dec(_class = (_class2 = /*#__PURE__*/function (_BaseEntity) {
+}), _dec6 = (0, _typeorm.JoinColumn)(), _dec(_class = (_class2 = /*#__PURE__*/function (_BaseEntity) {
   _inherits(CobrosFreq, _BaseEntity);
   var _super = _createSuper(CobrosFreq);
   function CobrosFreq() {
@@ -49,7 +54,8 @@ var CobrosFreq = (_dec = (0, _typeorm.Entity)({
     _this = _super.call.apply(_super, [this].concat(args));
     _initializerDefineProperty(_assertThisInitialized(_this), "cobId", _descriptor, _assertThisInitialized(_this));
     _initializerDefineProperty(_assertThisInitialized(_this), "cobDate", _descriptor2, _assertThisInitialized(_this));
-    _initializerDefineProperty(_assertThisInitialized(_this), "frecuente", _descriptor3, _assertThisInitialized(_this));
+    _initializerDefineProperty(_assertThisInitialized(_this), "cobAmount", _descriptor3, _assertThisInitialized(_this));
+    _initializerDefineProperty(_assertThisInitialized(_this), "frecuente", _descriptor4, _assertThisInitialized(_this));
     return _this;
   }
   return _createClass(CobrosFreq);
@@ -63,7 +69,12 @@ var CobrosFreq = (_dec = (0, _typeorm.Entity)({
   enumerable: true,
   writable: true,
   initializer: null
-}), _descriptor3 = _applyDecoratedDescriptor(_class2.prototype, "frecuente", [_dec4, _dec5], {
+}), _descriptor3 = _applyDecoratedDescriptor(_class2.prototype, "cobAmount", [_dec4], {
+  configurable: true,
+  enumerable: true,
+  writable: true,
+  initializer: null
+}), _descriptor4 = _applyDecoratedDescriptor(_class2.prototype, "frecuente", [_dec5, _dec6], {
   configurable: true,
   enumerable: true,
   writable: true,

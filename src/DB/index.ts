@@ -35,8 +35,8 @@ export const AppDataSource = new DataSource({
     CobrosFreq,
     Ingresos,
   ],
-  // logging: true,
+  logging: true,
   synchronize: true,
-  migrations: ['src/migrations/*.ts'],
-  migrationsTableName: 'migrations_bd_baro',
+  // migrations: ['src/migrations/*.ts'],
+  // migrationsTableName: 'migrations_bd_baro',
 })

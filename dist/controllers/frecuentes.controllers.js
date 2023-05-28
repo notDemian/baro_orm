@@ -4,12 +4,12 @@ function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" =
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.PUT_freq = exports.POST_freq = exports.GET_freq = exports.GET_ALL_freq = exports.DELETE_freq = void 0;
+exports.getCobrosFreq = exports.PUT_freq = exports.POST_freq = exports.GET_freq = exports.GET_ALL_freq = exports.DELETE_freq = void 0;
 var _CobrosFreq = require("../entitys/CobrosFreq.js");
 var _Day2 = require("../entitys/Day.js");
 var _Frecuentes = require("../entitys/Frecuentes.js");
 var _Semanas = require("../entitys/Semanas.js");
-var _jsonwebtoken = _interopRequireDefault(require("jsonwebtoken"));
+var _axios = _interopRequireDefault(require("axios"));
 var _moment = _interopRequireDefault(require("moment/moment.js"));
 var _config = require("../config/config.js");
 var _Dates = require("../utils/Dates.js");
@@ -30,50 +30,41 @@ function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; } /* eslint-disable @typescript-eslint/no-unused-vars */ /* eslint-disable @typescript-eslint/no-empty-function */ /* eslint-disable indent */
 var POST_freq = /*#__PURE__*/function () {
   var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(req, res) {
-    var token, decodedUser, _req$body, name, amount, lapse, description, isStatic, date, Today, today, startOfWeek, dayFound, todayEntity, semanaFound, endOfWeek, semanaCreated, insertSemanas, dayCreated, _dayCreated, freqCreated, insertFreq;
+    var rUser, _req$body, name, amount, lapse, description, isStatic, date, Today, today, startOfWeek, dayFound, todayEntity, semanaFound, endOfWeek, semanaCreated, insertSemanas, dayCreated, _dayCreated, freqCreated, resIA, insertFreq;
     return _regeneratorRuntime().wrap(function _callee$(_context) {
       while (1) switch (_context.prev = _context.next) {
         case 0:
           _context.prev = 0;
-          token = req.get('token');
-          if (token) {
+          rUser = res.locals.user;
+          if (rUser) {
             _context.next = 4;
             break;
           }
           return _context.abrupt("return", res.status(400).json({
-            message: 'Token de acceso no válido'
+            message: 'Sesión invalida'
           }));
         case 4:
-          decodedUser = _jsonwebtoken["default"].verify(token, _config.SECRET);
-          if (decodedUser.usuId) {
-            _context.next = 7;
-            break;
-          }
-          return _context.abrupt("return", res.status(400).json({
-            message: 'Token de acceso no válido'
-          }));
-        case 7:
           _req$body = req.body, name = _req$body.name, amount = _req$body.amount, lapse = _req$body.lapse, description = _req$body.description, isStatic = _req$body.isStatic, date = _req$body.date;
-          if (!(!name || !amount || !lapse || isStatic === undefined || name.trim() === '' || amount <= 0 || lapse.trim() === '')) {
-            _context.next = 10;
+          if (!(!name || !amount || !lapse || !description || isStatic === undefined || name.trim() === '' || amount <= 0 || lapse.trim() === '')) {
+            _context.next = 7;
             break;
           }
           return _context.abrupt("return", res.status(400).json({
             message: 'Datos incompletos'
           }));
-        case 10:
+        case 7:
           Today = (0, _moment["default"])(date);
           if (Today.isValid()) {
-            _context.next = 13;
+            _context.next = 10;
             break;
           }
           return _context.abrupt("return", res.status(400).json({
             message: 'Fecha no válida'
           }));
-        case 13:
+        case 10:
           today = Today.format(_Dates.FORMATS.SIMPLE_DATE);
           startOfWeek = (0, _Dates.getSemStart)().format(_Dates.FORMATS.SIMPLE_DATE);
-          _context.next = 17;
+          _context.next = 14;
           return _Day2.Day.findOne({
             relations: {
               semana: true
@@ -82,19 +73,19 @@ var POST_freq = /*#__PURE__*/function () {
               dayDate: today,
               semana: {
                 user: {
-                  usuId: decodedUser.usuId
+                  usuId: rUser.usuId
                 }
               }
             }
           });
-        case 17:
+        case 14:
           dayFound = _context.sent;
           todayEntity = dayFound;
           if (dayFound) {
-            _context.next = 43;
+            _context.next = 40;
             break;
           }
-          _context.next = 22;
+          _context.next = 19;
           return _Semanas.Semanas.findOne({
             relations: {
               user: true
@@ -102,56 +93,56 @@ var POST_freq = /*#__PURE__*/function () {
             where: {
               semStart: startOfWeek,
               user: {
-                usuId: decodedUser.usuId
+                usuId: rUser.usuId
               }
             }
           });
-        case 22:
+        case 19:
           semanaFound = _context.sent;
           if (semanaFound) {
-            _context.next = 37;
+            _context.next = 34;
             break;
           }
           endOfWeek = Today.endOf('week').format(_Dates.FORMATS.SIMPLE_DATE);
-          _context.next = 27;
+          _context.next = 24;
           return _Semanas.Semanas.create({
             semStart: startOfWeek,
             semEnd: endOfWeek,
             user: {
-              usuId: decodedUser.usuId
+              usuId: rUser.usuId
             }
           });
-        case 27:
+        case 24:
           semanaCreated = _context.sent;
-          _context.next = 30;
+          _context.next = 27;
           return semanaCreated.save();
-        case 30:
+        case 27:
           insertSemanas = _context.sent;
           dayCreated = _Day2.Day.create({
             dayDate: today,
             semana: insertSemanas
           });
-          _context.next = 34;
+          _context.next = 31;
           return dayCreated.save();
-        case 34:
+        case 31:
           todayEntity = _context.sent;
-          _context.next = 41;
+          _context.next = 38;
           break;
-        case 37:
+        case 34:
           _dayCreated = _Day2.Day.create({
             dayDate: today,
             semana: semanaFound
           });
-          _context.next = 40;
+          _context.next = 37;
           return _dayCreated.save();
-        case 40:
+        case 37:
           todayEntity = _context.sent;
-        case 41:
-          _context.next = 44;
+        case 38:
+          _context.next = 41;
           break;
-        case 43:
+        case 40:
           todayEntity = dayFound;
-        case 44:
+        case 41:
           freqCreated = _Frecuentes.Frecuentes.create({
             freName: name,
             freDescription: description,
@@ -160,29 +151,45 @@ var POST_freq = /*#__PURE__*/function () {
             freIsStatic: isStatic,
             day: todayEntity,
             user: {
-              usuId: decodedUser.usuId
+              usuId: rUser.usuId
             }
           });
-          _context.next = 47;
+          _context.prev = 42;
+          _context.next = 45;
+          return _axios["default"].post("".concat(_config.API_IA_URL, "/api/classification/freq"), freqCreated);
+        case 45:
+          resIA = _context.sent;
+          console.log({
+            data: resIA.data
+          });
+          if (resIA && resIA.data && resIA.data.classification) freqCreated.freCategory = resIA.data.classification;
+          _context.next = 53;
+          break;
+        case 50:
+          _context.prev = 50;
+          _context.t0 = _context["catch"](42);
+          console.log(_context.t0);
+        case 53:
+          _context.next = 55;
           return freqCreated.save();
-        case 47:
+        case 55:
           insertFreq = _context.sent;
           return _context.abrupt("return", res.status(201).json({
             message: 'Gasto creado',
             gasto: insertFreq
           }));
-        case 51:
-          _context.prev = 51;
-          _context.t0 = _context["catch"](0);
-          console.log(_context.t0);
+        case 59:
+          _context.prev = 59;
+          _context.t1 = _context["catch"](0);
+          console.log(_context.t1);
           return _context.abrupt("return", res.status(500).json({
             message: 'Error al crear el gasto'
           }));
-        case 55:
+        case 63:
         case "end":
           return _context.stop();
       }
-    }, _callee, null, [[0, 51]]);
+    }, _callee, null, [[0, 59], [42, 50]]);
   }));
   return function POST_freq(_x, _x2) {
     return _ref.apply(this, arguments);
@@ -191,56 +198,47 @@ var POST_freq = /*#__PURE__*/function () {
 exports.POST_freq = POST_freq;
 var GET_ALL_freq = /*#__PURE__*/function () {
   var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(req, res) {
-    var token, decodedUser, frecuentesFound, _Day, proximos, notifications, _iterator, _step, freq, lastCobDate, cobroFound, lastCobDay, nextCob, daysTillNextCob, cobroCreated, nextCobDate, priorityColor;
+    var rUser, frecuentesFound, _Day, proximos, notifications, _iterator, _step, freq, lastCobDate, cobroFound, lastCobDay, nextCob, daysTillNextCob, cobroCreated, nextCobDate, priorityColor;
     return _regeneratorRuntime().wrap(function _callee2$(_context2) {
       while (1) switch (_context2.prev = _context2.next) {
         case 0:
           _context2.prev = 0;
-          token = req.get('token');
-          if (token) {
+          rUser = res.locals.user;
+          if (rUser) {
             _context2.next = 4;
             break;
           }
           return _context2.abrupt("return", res.status(400).json({
-            message: 'Token de acceso no válido'
+            message: 'Sesión invalida'
           }));
         case 4:
-          decodedUser = _jsonwebtoken["default"].verify(token, _config.SECRET);
-          if (decodedUser.usuId) {
-            _context2.next = 7;
-            break;
-          }
-          return _context2.abrupt("return", res.status(400).json({
-            message: 'Token de acceso no válido'
-          }));
-        case 7:
-          _context2.next = 9;
+          _context2.next = 6;
           return _Frecuentes.Frecuentes.find({
             relations: {
               day: true
             },
             where: {
               user: {
-                usuId: decodedUser.usuId
+                usuId: rUser.usuId
               }
             }
           });
-        case 9:
+        case 6:
           frecuentesFound = _context2.sent;
           _Day = (0, _moment["default"])();
           proximos = [];
           notifications = [];
           _iterator = _createForOfIteratorHelper(frecuentesFound);
-          _context2.prev = 14;
+          _context2.prev = 11;
           _iterator.s();
-        case 16:
+        case 13:
           if ((_step = _iterator.n()).done) {
-            _context2.next = 36;
+            _context2.next = 33;
             break;
           }
           freq = _step.value;
           lastCobDate = freq.day.dayDate;
-          _context2.next = 21;
+          _context2.next = 18;
           return _CobrosFreq.CobrosFreq.findOne({
             where: {
               frecuente: {
@@ -251,7 +249,7 @@ var GET_ALL_freq = /*#__PURE__*/function () {
               cobDate: 'DESC'
             }
           });
-        case 21:
+        case 18:
           cobroFound = _context2.sent;
           if (cobroFound) {
             lastCobDate = cobroFound.cobDate;
@@ -260,7 +258,7 @@ var GET_ALL_freq = /*#__PURE__*/function () {
           nextCob = _controller.LAPSES_TO_INT[freq.freLapse](lastCobDay);
           daysTillNextCob = nextCob.diff(_Day, 'days') + 1;
           if (!(daysTillNextCob <= 0)) {
-            _context2.next = 31;
+            _context2.next = 28;
             break;
           }
           cobroCreated = _CobrosFreq.CobrosFreq.create({
@@ -269,11 +267,11 @@ var GET_ALL_freq = /*#__PURE__*/function () {
               freId: freq.freId
             }
           });
-          _context2.next = 30;
+          _context2.next = 27;
           return cobroCreated.save();
-        case 30:
+        case 27:
           notifications.push("Se ha cobrado ".concat(freq.freName, " por $").concat(freq.freAmount));
-        case 31:
+        case 28:
           nextCobDate = nextCob.format(_Dates.FORMATS.SIMPLE_DATE);
           priorityColor = (0, _helpers.getPriorityColor)(daysTillNextCob);
           proximos.push(_objectSpread(_objectSpread({}, freq), {}, {
@@ -281,39 +279,39 @@ var GET_ALL_freq = /*#__PURE__*/function () {
             daysTillNextCob: daysTillNextCob,
             priorityColor: priorityColor
           }));
-        case 34:
-          _context2.next = 16;
+        case 31:
+          _context2.next = 13;
           break;
-        case 36:
-          _context2.next = 41;
+        case 33:
+          _context2.next = 38;
           break;
+        case 35:
+          _context2.prev = 35;
+          _context2.t0 = _context2["catch"](11);
+          _iterator.e(_context2.t0);
         case 38:
           _context2.prev = 38;
-          _context2.t0 = _context2["catch"](14);
-          _iterator.e(_context2.t0);
-        case 41:
-          _context2.prev = 41;
           _iterator.f();
-          return _context2.finish(41);
-        case 44:
+          return _context2.finish(38);
+        case 41:
           return _context2.abrupt("return", res.status(200).json({
             message: 'Gastos frecuentes',
             frecuentes: frecuentesFound,
             proximos: proximos,
             notifications: notifications
           }));
-        case 47:
-          _context2.prev = 47;
+        case 44:
+          _context2.prev = 44;
           _context2.t1 = _context2["catch"](0);
           console.log(_context2.t1);
           return _context2.abrupt("return", res.status(500).json({
             message: 'Error al obtener los gastos'
           }));
-        case 51:
+        case 48:
         case "end":
           return _context2.stop();
       }
-    }, _callee2, null, [[0, 47], [14, 38, 41, 44]]);
+    }, _callee2, null, [[0, 44], [11, 35, 38, 41]]);
   }));
   return function GET_ALL_freq(_x3, _x4) {
     return _ref2.apply(this, arguments);
@@ -322,7 +320,7 @@ var GET_ALL_freq = /*#__PURE__*/function () {
 exports.GET_ALL_freq = GET_ALL_freq;
 var GET_freq = /*#__PURE__*/function () {
   var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3(req, res) {
-    var id, token, decodedUser, freqFound;
+    var id, rUser, freqFound;
     return _regeneratorRuntime().wrap(function _callee3$(_context3) {
       while (1) switch (_context3.prev = _context3.next) {
         case 0:
@@ -336,25 +334,16 @@ var GET_freq = /*#__PURE__*/function () {
             message: 'Id no válido'
           }));
         case 4:
-          token = req.get('token');
-          if (token) {
+          rUser = res.locals.user;
+          if (rUser) {
             _context3.next = 7;
             break;
           }
           return _context3.abrupt("return", res.status(400).json({
-            message: 'Token de acceso no válido'
+            message: 'Sesión invalida'
           }));
         case 7:
-          decodedUser = _jsonwebtoken["default"].verify(token, _config.SECRET);
-          if (decodedUser.usuId) {
-            _context3.next = 10;
-            break;
-          }
-          return _context3.abrupt("return", res.status(400).json({
-            message: 'Token de acceso no válido'
-          }));
-        case 10:
-          _context3.next = 12;
+          _context3.next = 9;
           return _Frecuentes.Frecuentes.findOne({
             relations: {
               day: true
@@ -362,36 +351,36 @@ var GET_freq = /*#__PURE__*/function () {
             where: {
               freId: id,
               user: {
-                usuId: decodedUser.usuId
+                usuId: rUser.usuId
               }
             }
           });
-        case 12:
+        case 9:
           freqFound = _context3.sent;
           if (freqFound) {
-            _context3.next = 15;
+            _context3.next = 12;
             break;
           }
           return _context3.abrupt("return", res.status(404).json({
             message: 'Gasto frecuente no encontrado'
           }));
-        case 15:
+        case 12:
           return _context3.abrupt("return", res.status(200).json({
             message: 'Gasto frecuente',
             gasto: freqFound
           }));
-        case 18:
-          _context3.prev = 18;
+        case 15:
+          _context3.prev = 15;
           _context3.t0 = _context3["catch"](0);
           console.log(_context3.t0);
           return _context3.abrupt("return", res.status(500).json({
             message: 'Error al obtener el gasto'
           }));
-        case 22:
+        case 19:
         case "end":
           return _context3.stop();
       }
-    }, _callee3, null, [[0, 18]]);
+    }, _callee3, null, [[0, 15]]);
   }));
   return function GET_freq(_x5, _x6) {
     return _ref3.apply(this, arguments);
@@ -400,7 +389,7 @@ var GET_freq = /*#__PURE__*/function () {
 exports.GET_freq = GET_freq;
 var PUT_freq = /*#__PURE__*/function () {
   var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4(req, res) {
-    var id, _req$body2, name, amount, lapse, description, token, decodedUser, freqFound;
+    var id, _req$body2, name, amount, lapse, description, rUser, freqFound;
     return _regeneratorRuntime().wrap(function _callee4$(_context4) {
       while (1) switch (_context4.prev = _context4.next) {
         case 0:
@@ -449,46 +438,37 @@ var PUT_freq = /*#__PURE__*/function () {
             message: 'El nombre no debe estar vacío'
           }));
         case 13:
-          token = req.get('token');
-          if (token) {
+          rUser = res.locals.user;
+          if (rUser) {
             _context4.next = 16;
             break;
           }
           return _context4.abrupt("return", res.status(400).json({
-            message: 'Token de acceso no válido'
+            message: 'Sesión invalida'
           }));
         case 16:
-          decodedUser = _jsonwebtoken["default"].verify(token, _config.SECRET);
-          if (decodedUser.usuId) {
-            _context4.next = 19;
-            break;
-          }
-          return _context4.abrupt("return", res.status(400).json({
-            message: 'Token de acceso no válido'
-          }));
-        case 19:
-          _context4.next = 21;
+          _context4.next = 18;
           return _Frecuentes.Frecuentes.findOne({
             where: {
               freId: id,
               user: {
-                usuId: decodedUser.usuId
+                usuId: rUser.usuId
               }
             },
             relations: {
               day: true
             }
           });
-        case 21:
+        case 18:
           freqFound = _context4.sent;
           if (freqFound) {
-            _context4.next = 24;
+            _context4.next = 21;
             break;
           }
           return _context4.abrupt("return", res.status(404).json({
             message: 'Gasto frecuente no encontrado'
           }));
-        case 24:
+        case 21:
           if (name) {
             freqFound.freName = name;
           }
@@ -504,25 +484,25 @@ var PUT_freq = /*#__PURE__*/function () {
           console.log({
             freqFound: freqFound
           });
-          _context4.next = 31;
+          _context4.next = 28;
           return freqFound.save();
-        case 31:
+        case 28:
           return _context4.abrupt("return", res.status(200).json({
             message: 'Gasto frecuente',
             gasto: freqFound
           }));
-        case 34:
-          _context4.prev = 34;
+        case 31:
+          _context4.prev = 31;
           _context4.t0 = _context4["catch"](0);
           console.log(_context4.t0);
           return _context4.abrupt("return", res.status(500).json({
             message: 'Error al obtener el gasto'
           }));
-        case 38:
+        case 35:
         case "end":
           return _context4.stop();
       }
-    }, _callee4, null, [[0, 34]]);
+    }, _callee4, null, [[0, 31]]);
   }));
   return function PUT_freq(_x7, _x8) {
     return _ref4.apply(this, arguments);
@@ -531,7 +511,7 @@ var PUT_freq = /*#__PURE__*/function () {
 exports.PUT_freq = PUT_freq;
 var DELETE_freq = /*#__PURE__*/function () {
   var _ref5 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee5(req, res) {
-    var id, token, decodedUser, removedFreq;
+    var id, rUser, removedFreq;
     return _regeneratorRuntime().wrap(function _callee5$(_context5) {
       while (1) switch (_context5.prev = _context5.next) {
         case 0:
@@ -545,57 +525,117 @@ var DELETE_freq = /*#__PURE__*/function () {
             message: 'Id no válido'
           }));
         case 4:
-          token = req.get('token');
-          if (token) {
+          rUser = res.locals.user;
+          if (rUser) {
             _context5.next = 7;
             break;
           }
           return _context5.abrupt("return", res.status(400).json({
-            message: 'Token de acceso no válido'
+            message: 'Sesión invalida'
           }));
         case 7:
-          decodedUser = _jsonwebtoken["default"].verify(token, _config.SECRET);
-          if (decodedUser.usuId) {
-            _context5.next = 10;
-            break;
-          }
-          return _context5.abrupt("return", res.status(400).json({
-            message: 'Token de acceso no válido'
-          }));
-        case 10:
-          _context5.next = 12;
+          _context5.next = 9;
           return _Frecuentes.Frecuentes.createQueryBuilder('frecuentes')["delete"]().from(_Frecuentes.Frecuentes).where('freId = :id', {
             id: id
           }).execute();
-        case 12:
+        case 9:
           removedFreq = _context5.sent;
           if (!(removedFreq.affected === 0)) {
-            _context5.next = 15;
+            _context5.next = 12;
             break;
           }
           return _context5.abrupt("return", res.status(400).json({
             message: 'Gasto no encontrado'
           }));
-        case 15:
+        case 12:
           return _context5.abrupt("return", res.status(200).json({
             message: 'Gasto frecuente eliminado',
             ok: true
           }));
-        case 18:
-          _context5.prev = 18;
+        case 15:
+          _context5.prev = 15;
           _context5.t0 = _context5["catch"](0);
           console.log(_context5.t0);
           return _context5.abrupt("return", res.status(500).json({
             message: 'Error al eliminar el gasto'
           }));
-        case 22:
+        case 19:
         case "end":
           return _context5.stop();
       }
-    }, _callee5, null, [[0, 18]]);
+    }, _callee5, null, [[0, 15]]);
   }));
   return function DELETE_freq(_x9, _x10) {
     return _ref5.apply(this, arguments);
   };
 }();
 exports.DELETE_freq = DELETE_freq;
+var getCobrosFreq = /*#__PURE__*/function () {
+  var _ref6 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee6(req, res) {
+    var id, rUser, freqFound;
+    return _regeneratorRuntime().wrap(function _callee6$(_context6) {
+      while (1) switch (_context6.prev = _context6.next) {
+        case 0:
+          _context6.prev = 0;
+          id = req.params.id;
+          if (!(!id || !(0, _Numbers.isNumber)(id))) {
+            _context6.next = 4;
+            break;
+          }
+          return _context6.abrupt("return", res.status(400).json({
+            message: 'Id no válido'
+          }));
+        case 4:
+          rUser = res.locals.user;
+          if (rUser) {
+            _context6.next = 7;
+            break;
+          }
+          return _context6.abrupt("return", res.status(400).json({
+            message: 'Sesión invalida'
+          }));
+        case 7:
+          _context6.next = 9;
+          return _Frecuentes.Frecuentes.findOne({
+            relations: {
+              cobros: true
+            },
+            where: {
+              freId: id,
+              user: {
+                usuId: rUser.usuId
+              }
+            }
+          });
+        case 9:
+          freqFound = _context6.sent;
+          if (freqFound) {
+            _context6.next = 12;
+            break;
+          }
+          return _context6.abrupt("return", res.status(404).json({
+            message: 'Gasto frecuente no encontrado'
+          }));
+        case 12:
+          return _context6.abrupt("return", res.status(200).json({
+            message: 'Cobros obtenidos',
+            freq: freqFound
+          }));
+        case 15:
+          _context6.prev = 15;
+          _context6.t0 = _context6["catch"](0);
+          console.log(_context6.t0);
+          return _context6.abrupt("return", res.status(500).json({
+            message: 'Error al obtener los cobros'
+          }));
+        case 19:
+        case "end":
+          return _context6.stop();
+      }
+    }, _callee6, null, [[0, 15]]);
+  }));
+  return function getCobrosFreq(_x11, _x12) {
+    return _ref6.apply(this, arguments);
+  };
+}();
+exports.getCobrosFreq = getCobrosFreq;

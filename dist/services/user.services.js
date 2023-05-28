@@ -29,20 +29,14 @@ function _getBalance() {
           });
         case 2:
           user = _context.sent;
-          console.log({
-            userId: userId
-          });
-          console.log({
-            user: user
-          });
           if (user) {
-            _context.next = 7;
+            _context.next = 5;
             break;
           }
           return _context.abrupt("return", [undefined, 'Usuario no encontrado']);
-        case 7:
+        case 5:
           return _context.abrupt("return", [user.dataUser.datBalance, undefined, user]);
-        case 8:
+        case 6:
         case "end":
           return _context.stop();
       }

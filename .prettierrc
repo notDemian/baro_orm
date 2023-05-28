@@ -11,6 +11,5 @@
     "^[../]"
   ],
   "importOrderSeparation": true,
-  "importOrderSortSpecifiers": true,
-  "importOrderParserPlugins": ["classProperties", "decorators-legacy"]
+  "importOrderSortSpecifiers": true
 }

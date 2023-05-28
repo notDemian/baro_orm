@@ -51,6 +51,8 @@ export class User extends BaseEntity {
   @OneToMany(() => Frecuentes, (freq) => freq.user)
   frecuentes: Frecuentes[]
 
+
+
   @OneToMany(() => Ingresos, (ing) => ing.user)
   ingresos: Ingresos[]
 }

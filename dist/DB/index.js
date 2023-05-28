@@ -24,9 +24,9 @@ var AppDataSource = new _typeorm.DataSource({
   password: _config.MYSQLPASSWORD,
   database: _config.MYSQLDATABASE,
   entities: [_User.User, _DataUser.DataUser, _Semanas.Semanas, _Day.Day, _Diarios.Diarios, _Frecuentes.Frecuentes, _CobrosFreq.CobrosFreq, _Ingresos.Ingresos],
-  // logging: true,
-  synchronize: true,
-  migrations: ['src/migrations/*.ts'],
-  migrationsTableName: 'migrations_bd_baro'
+  logging: true,
+  synchronize: true
+  // migrations: ['src/migrations/*.ts'],
+  // migrationsTableName: 'migrations_bd_baro',
 });
 exports.AppDataSource = AppDataSource;

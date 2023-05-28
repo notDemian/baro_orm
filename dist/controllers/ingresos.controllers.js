@@ -8,9 +8,7 @@ exports.updateIngreso = exports.getIngresos = void 0;
 var _DataUser = require("../entitys/DataUser.js");
 var _Ingresos = require("../entitys/Ingresos.js");
 var _userServices = require("../services/user.services.js");
-var _jsonwebtoken = _interopRequireDefault(require("jsonwebtoken"));
 var _moment = _interopRequireDefault(require("moment"));
-var _config = require("../config/config.js");
 var _Dates = require("../utils/Dates.js");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
@@ -24,43 +22,34 @@ function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 var getIngresos = /*#__PURE__*/function () {
   var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(req, res) {
-    var token, decodedUser, ingresosFoun;
+    var rUser, ingresosFoun;
     return _regeneratorRuntime().wrap(function _callee$(_context) {
       while (1) switch (_context.prev = _context.next) {
         case 0:
-          token = req.get('token');
-          if (!(!token || token === '')) {
+          rUser = res.locals.user;
+          if (rUser) {
             _context.next = 3;
             break;
           }
           return _context.abrupt("return", res.status(400).json({
-            message: 'Token de acceso no válido'
+            message: 'Sesión invalida'
           }));
         case 3:
-          decodedUser = _jsonwebtoken["default"].verify(token, _config.SECRET);
-          if (decodedUser.usuId) {
-            _context.next = 6;
-            break;
-          }
-          return _context.abrupt("return", res.status(400).json({
-            message: 'Token de acceso no válido'
-          }));
-        case 6:
-          _context.next = 8;
+          _context.next = 5;
           return _Ingresos.Ingresos.find({
             where: {
               user: {
-                usuId: decodedUser.usuId
+                usuId: rUser.usuId
               }
             }
           });
-        case 8:
+        case 5:
           ingresosFoun = _context.sent;
           return _context.abrupt("return", res.status(200).json({
             message: 'Ingresos obtenidos correctamente',
             ingresos: ingresosFoun
           }));
-        case 10:
+        case 7:
         case "end":
           return _context.stop();
       }
@@ -73,7 +62,7 @@ var getIngresos = /*#__PURE__*/function () {
 exports.getIngresos = getIngresos;
 var updateIngreso = /*#__PURE__*/function () {
   var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(req, res) {
-    var _req$body, ingreso, desc, tipo, token, decodedUser, Today, _yield$getBalance, _yield$getBalance2, datBalance, err, userBD, newBalance, ingresoInsert, updatedBalance;
+    var _req$body, ingreso, desc, tipo, rUser, Today, _yield$getBalance, _yield$getBalance2, datBalance, err, userBD, newBalance, ingresoInsert, updatedBalance;
     return _regeneratorRuntime().wrap(function _callee2$(_context2) {
       while (1) switch (_context2.prev = _context2.next) {
         case 0:
@@ -86,7 +75,7 @@ var updateIngreso = /*#__PURE__*/function () {
             message: 'Faltan datos'
           }));
         case 3:
-          if (!(parseFloat(ingreso) <= 0)) {
+          if (!(parseFloat(ingreso) <= 0 || parseFloat(ingreso) > 499999)) {
             _context2.next = 5;
             break;
           }
@@ -95,41 +84,33 @@ var updateIngreso = /*#__PURE__*/function () {
           }));
         case 5:
           _context2.prev = 5;
-          token = req.get('token');
-          if (token) {
+          rUser = res.locals.user;
+          if (rUser) {
             _context2.next = 9;
             break;
           }
           return _context2.abrupt("return", res.status(400).json({
-            message: 'No token'
+            message: 'Sesión invalida'
           }));
         case 9:
-          decodedUser = _jsonwebtoken["default"].verify(token, _config.SECRET);
-          if (decodedUser.usuId) {
-            _context2.next = 12;
-            break;
-          }
-          return _context2.abrupt("return", res.status(400).json({
-            message: 'Token de acceso no válido'
-          }));
-        case 12:
           Today = (0, _moment["default"])().format(_Dates.FORMATS.SIMPLE_DATE);
-          _context2.next = 15;
-          return (0, _userServices.getBalance)(decodedUser.usuId);
-        case 15:
+          console.log(rUser);
+          _context2.next = 13;
+          return (0, _userServices.getBalance)(rUser.usuId);
+        case 13:
           _yield$getBalance = _context2.sent;
           _yield$getBalance2 = _slicedToArray(_yield$getBalance, 3);
           datBalance = _yield$getBalance2[0];
           err = _yield$getBalance2[1];
           userBD = _yield$getBalance2[2];
           if (!(datBalance === undefined || userBD === undefined)) {
-            _context2.next = 22;
+            _context2.next = 20;
             break;
           }
           return _context2.abrupt("return", res.status(400).json({
             message: err !== null && err !== void 0 ? err : 'Error'
           }));
-        case 22:
+        case 20:
           newBalance = datBalance + parseFloat(ingreso);
           ingresoInsert = _Ingresos.Ingresos.create({
             ingAmount: parseFloat(ingreso),
@@ -138,41 +119,41 @@ var updateIngreso = /*#__PURE__*/function () {
             ingDescription: desc,
             user: userBD
           });
-          _context2.next = 26;
+          _context2.next = 24;
           return ingresoInsert.save();
-        case 26:
-          _context2.next = 28;
+        case 24:
+          _context2.next = 26;
           return _DataUser.DataUser.update({
-            datId: decodedUser.dataUser.datId
+            datId: rUser.dataUser.datId
           }, {
             datBalance: newBalance
           });
-        case 28:
+        case 26:
           updatedBalance = _context2.sent;
           if (updatedBalance.affected) {
-            _context2.next = 31;
+            _context2.next = 29;
             break;
           }
           return _context2.abrupt("return", res.status(400).json({
             message: 'Error al actualizar el balance'
           }));
-        case 31:
+        case 29:
           return _context2.abrupt("return", res.status(200).json({
             message: 'Ingreso actualizado',
             newBalance: newBalance
           }));
-        case 34:
-          _context2.prev = 34;
+        case 32:
+          _context2.prev = 32;
           _context2.t0 = _context2["catch"](5);
           console.log(_context2.t0);
           return _context2.abrupt("return", res.status(500).json({
             message: 'Error en el servidor'
           }));
-        case 38:
+        case 36:
         case "end":
           return _context2.stop();
       }
-    }, _callee2, null, [[5, 34]]);
+    }, _callee2, null, [[5, 32]]);
   }));
   return function updateIngreso(_x3, _x4) {
     return _ref2.apply(this, arguments);

@@ -11,6 +11,9 @@ var __public = (0, _path.join)(__dirname, '../public');
 var storage = _multer["default"].diskStorage({
   destination: __public,
   filename: function filename(req, file, cb) {
+    console.log({
+      file: file
+    });
     cb(null, "".concat(Date.now(), ".").concat(file.originalname.split('.').at(-1)));
   }
 });

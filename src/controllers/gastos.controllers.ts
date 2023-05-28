@@ -9,12 +9,14 @@ import { Diarios } from '@entitys/Diarios'
 import { Semanas } from '@entitys/Semanas'
 import { User } from '@entitys/User'
 import { getBalance } from '@services/user.services'
+import axios from 'axios'
 import jwt from 'jsonwebtoken'
 import moment from 'moment/moment.js'
 
-import { SECRET } from '@config/config'
+import { API_IA_URL, SECRET } from '@config/config'
 import { FORMATS, getSemEnd, getSemStart } from '@utils/Dates'
 import { LIMITS } from '@utils/types/Day/controller'
+import { GetClassificationResponse } from '@utils/types/IA'
 import { HandleRequest } from '@utils/types/helpers'
 
 export const createGastoDiario: HandleRequest<{
@@ -37,18 +39,12 @@ export const createGastoDiario: HandleRequest<{
     if (isNaN(Amount) || Amount <= 0)
       return res.status(400).json({ message: 'Gasto invalido' })
 
-    const token = req.get('token')
-    if (!token) {
-      return res.status(400).json({ message: 'Token de acceso no válido' })
-    }
-    const decodedUser = jwt.verify(token, SECRET) as User
-    if (!decodedUser.usuId) {
-      return res.status(400).json({ message: 'Token de acceso no válido' })
-    }
+    const rUser = res.locals.user
+    if (!rUser) return res.status(400).json({ message: 'Sesión invalida' })
 
     const user = await User.findOneOrFail({
       where: {
-        usuId: decodedUser.usuId,
+        usuId: rUser.usuId,
       },
       relations: {
         dataUser: true,
@@ -69,8 +65,8 @@ export const createGastoDiario: HandleRequest<{
         semEnd,
         semStart,
         user: {
-          usuId: decodedUser.usuId,
-        }
+          usuId: rUser.usuId,
+        },
       },
       relations: {
         days: true,
@@ -106,7 +102,6 @@ export const createGastoDiario: HandleRequest<{
         finalDay = dayFound
       }
     }
-
     const diario = Diarios.create({
       diaAmount: Amount,
       diaDescription: desc,
@@ -114,6 +109,18 @@ export const createGastoDiario: HandleRequest<{
       diaName: nombre,
       day: finalDay,
     })
+
+    try {
+      const resIA = await axios.post<GetClassificationResponse>(
+        `${API_IA_URL}/api/classification/dia`,
+        diario
+      )
+      console.log({ data: resIA.data })
+      if (resIA && resIA.data && resIA.data.classification)
+        diario.diaCategory = resIA.data.classification
+    } catch (err) {
+      console.log({ err })
+    }
 
     await diario.save()
 
@@ -129,16 +136,8 @@ export const createGastoDiario: HandleRequest<{
 
 export const getGastos: HandleRequest = async (req, res) => {
   try {
-    const token = req.get('token')
-    if (!token || token === '') {
-      return res.status(400).json({ message: 'Token de acceso no válido' })
-    }
-    const decodedUser = jwt.verify(token, SECRET) as User
-    if (!decodedUser.usuId) {
-      return res.status(400).json({ message: 'Token de acceso no válido' })
-    }
-
-    console.log(decodedUser)
+    const rUser = res.locals.user
+    if (!rUser) return res.status(400).json({ message: 'Sesión invalida' })
 
     // get last semana days
     const gastos = await Diarios.find({
@@ -146,7 +145,7 @@ export const getGastos: HandleRequest = async (req, res) => {
         day: {
           semana: {
             user: {
-              usuId: decodedUser.usuId,
+              usuId: rUser.usuId,
             },
           },
         },
@@ -156,11 +155,9 @@ export const getGastos: HandleRequest = async (req, res) => {
       },
       order: {
         diaId: 'DESC',
-
       },
       take: 10,
     })
-
 
     return res.status(200).json({ message: 'Gastos obtenidos', gastos })
   } catch (error) {
@@ -180,20 +177,14 @@ export const getSemanas: HandleRequest<{}, { semana?: string }> = async (
     const semEnd = getSemEnd().format(FORMATS.SIMPLE_DATE)
     const semanaStart = getSemStart(semana).format(FORMATS.SIMPLE_DATE)
     const semanaEnd = getSemEnd(semana).format(FORMATS.SIMPLE_DATE)
-    const token = req.get('token')
-    if (!token) {
-      return res.status(400).json({ message: 'Token de acceso no válido' })
-    }
-    const decodedUser = jwt.verify(token, SECRET) as User
-    if (!decodedUser.usuId) {
-      return res.status(400).json({ message: 'Token de acceso no válido' })
-    }
+    const rUser = res.locals.user
+    if (!rUser) return res.status(400).json({ message: 'Sesión invalida' })
 
     const semanaFound = await Semanas.findOne({
       where: {
         semStart: semana && semana !== '' ? semanaStart : semStart,
         user: {
-          usuId: decodedUser.usuId,
+          usuId: rUser.usuId,
         },
       },
       order: {
@@ -250,7 +241,7 @@ export const getSemanas: HandleRequest<{}, { semana?: string }> = async (
       where: {
         semStart: nextWeek,
         user: {
-          usuId: decodedUser.usuId,
+          usuId: rUser.usuId,
         },
       },
       order: {
@@ -262,7 +253,7 @@ export const getSemanas: HandleRequest<{}, { semana?: string }> = async (
       where: {
         semStart: prevWeek,
         user: {
-          usuId: decodedUser.usuId,
+          usuId: rUser.usuId,
         },
       },
       order: {
@@ -309,10 +300,13 @@ export const getSemanas: HandleRequest<{}, { semana?: string }> = async (
 
       const { dayId, dayDate } = diafiltered
 
-      const dayTotal = (await Diarios.createQueryBuilder('diarios')
-        .select('SUM(diarios.diaAmount)', 'sum')
-        .where('diarios.dayDayId = :dayId', { dayId })
-        .getRawOne()).sum ?? 0
+      const dayTotal =
+        (
+          await Diarios.createQueryBuilder('diarios')
+            .select('SUM(diarios.diaAmount)', 'sum')
+            .where('diarios.dayDayId = :dayId', { dayId })
+            .getRawOne()
+        ).sum ?? 0
 
       if (dayTotal > stadisticInfo.biggestExpense)
         stadisticInfo.biggestExpense = dayTotal
@@ -330,7 +324,7 @@ export const getSemanas: HandleRequest<{}, { semana?: string }> = async (
     stadisticInfo.vsLastWeek = totalLastWeek - totalWeek
 
     console.log({
-      finalDays
+      finalDays,
     })
 
     return res.status(200).json({
@@ -354,14 +348,8 @@ export const getDay: HandleRequest<{}, { day?: string }> = async (req, res) => {
   try {
     const { day } = req.params
 
-    const token = req.get('token')
-    if (!token) {
-      return res.status(400).json({ message: 'Token de acceso no válido' })
-    }
-    const decodedUser = jwt.verify(token, SECRET) as User
-    if (!decodedUser.usuId) {
-      return res.status(400).json({ message: 'Token de acceso no válido' })
-    }
+    const rUser = res.locals.user
+    if (!rUser) return res.status(400).json({ message: 'Sesión invalida' })
 
     moment.locale('es')
     const Today = moment(day)
@@ -379,7 +367,7 @@ export const getDay: HandleRequest<{}, { day?: string }> = async (req, res) => {
             dayDate: FormatDay,
             semana: {
               user: {
-                usuId: decodedUser.usuId,
+                usuId: rUser.usuId,
               },
             },
           },
@@ -392,7 +380,7 @@ export const getDay: HandleRequest<{}, { day?: string }> = async (req, res) => {
             dayDate: lastDay,
             semana: {
               user: {
-                usuId: decodedUser.usuId,
+                usuId: rUser.usuId,
               },
             },
           },
@@ -405,7 +393,7 @@ export const getDay: HandleRequest<{}, { day?: string }> = async (req, res) => {
             dayDate: nextDay,
             semana: {
               user: {
-                usuId: decodedUser.usuId,
+                usuId: rUser.usuId,
               },
             },
           },
@@ -507,15 +495,9 @@ export const updateGasto: HandleRequest<{
   if (newMonto <= 0) return res.status(400).json({ message: 'Monto invalido' })
 
   try {
-    const token = req.get('token')
-    if (!token)
-      return res.status(400).json({ message: 'Token de acceso no válido' })
-
-    const decodedUser = jwt.verify(token, SECRET) as User
-    if (!decodedUser.usuId)
-      return res.status(400).json({ message: 'Token de acceso no válido' })
-
-    const [datBalance, err] = await getBalance(decodedUser.usuId)
+    const rUser = res.locals.user
+    if (!rUser) return res.status(400).json({ message: 'Sesión invalida' })
+    const [datBalance, err] = await getBalance(rUser.usuId)
     if (datBalance === undefined)
       return res.status(400).json({ message: 'Usuario no encontrado' })
 
@@ -551,7 +533,7 @@ export const updateGasto: HandleRequest<{
 
     const updatedBalance = await DataUser.update(
       {
-        datId: decodedUser.dataUser.datId,
+        datId: rUser.dataUser.datId,
       },
       {
         datBalance: newBalance,

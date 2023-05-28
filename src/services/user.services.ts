@@ -12,9 +12,6 @@ export async function getBalance(
     },
   })
 
-  console.log({ userId })
-  console.log({ user })
-
   if (!user) return [undefined, 'Usuario no encontrado']
 
   return [user.dataUser.datBalance, undefined, user]

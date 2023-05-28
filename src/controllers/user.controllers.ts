@@ -11,6 +11,7 @@ import {
   HandleRequest,
   queryFailedGuard,
 } from '@utils/types/helpers'
+import { UserToken } from '@utils/zod'
 
 export const _getAllUsers: HandleRequest = async (req, res) => {
   try {
@@ -41,7 +42,6 @@ export const createUser: HandleReqWithMulter<{
 }> = async (req, res) => {
   try {
     const { correo, contrasena, nombre, contrasenaConfirmada } = req.body
-    
 
     if (!correo || !contrasena || !nombre || !contrasenaConfirmada) {
       return res.status(400).json({ message: 'Faltan datos' })
@@ -63,6 +63,8 @@ export const createUser: HandleReqWithMulter<{
     // if (!req.file) {
     //   return res.status(400).json({ message: 'No hay archivo' })
     // }
+    console.log('file ->', req.file)
+    console.log('body ->', req.body)
     const { filename } = req.file ?? { filename: 'default.png' }
 
     const encryptedPassword = await bcrypt.hash(contrasena, 10)
@@ -82,11 +84,21 @@ export const createUser: HandleReqWithMulter<{
 
     await user.save()
 
-    const token = jwt.sign({ ...user }, SECRET)
+    const tokenObj: UserToken = {
+      usuId: user.usuId,
+      dataUser: {
+        datId: dataUser.datId,
+      },
+    }
+    const token = jwt.sign(tokenObj, SECRET)
 
-    const {usuPassword, ...userWithoutPassword} = user
+    const { usuPassword: _, ...userWithoutPassword } = user
 
-    return res.send({ message: 'Usuario creado correctamente', user: userWithoutPassword, token })
+    return res.send({
+      message: 'Usuario creado correctamente',
+      user: userWithoutPassword,
+      token,
+    })
   } catch (error) {
     console.log('error ->', error)
     if (queryFailedGuard(error)) {
@@ -137,12 +149,21 @@ export const loginUser: HandleRequest<{
         .status(400)
         .json({ message: 'Correo o contraseña incorrectos' })
     }
+    const tokenObj: UserToken = {
+      usuId: user.usuId,
+      dataUser: {
+        datId: user.dataUser.datId,
+      },
+    }
+    const token = jwt.sign(tokenObj, SECRET)
 
-    const token = jwt.sign({ ...user }, SECRET)
+    const { usuPassword, ...userWithoutPassword } = user
 
-    const {usuPassword, ...userWithoutPassword} = user
-
-    return res.send({ message: 'Usuario logueado correctamente', user:userWithoutPassword, token })
+    return res.send({
+      message: 'Usuario logueado correctamente',
+      user: userWithoutPassword,
+      token,
+    })
   } catch (error) {
     console.log(error)
     return res.status(500).send({ message: 'Error interno ' })
@@ -154,21 +175,13 @@ export const updatePhoto: HandleReqWithMulter = async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ message: 'No hay archivo' })
     }
-
     const { filename } = req.file
-    const token = req.get('token')
-    if (!token) {
-      delFile(filename)
-      return res.status(400).json({ message: 'No hay sesión iniciada' })
-    }
-    const decoded = jwt.verify(token, SECRET) as User
 
-    if (!decoded.usuId) {
-      delFile(filename)
-      return res.status(400).json({ message: 'Sesión invalida' })
-    }
+    const rUser = res.locals.user
+    if (!rUser) return res.status(400).json({ message: 'Sesión invalida' })
+
     const userUpdated = await User.findOne({
-      where: { usuId: decoded.usuId },
+      where: { usuId: rUser.usuId },
       relations: {
         dataUser: true,
       },
@@ -195,32 +208,40 @@ export const updatePhoto: HandleReqWithMulter = async (req, res) => {
 export const updateUser: HandleRequest<{
   name: string
   newPassword: string
-  newPasswordConfirmed: string
+  actualPassword: string
   email?: string
 }> = async (req, res) => {
   try {
-    const { name, newPassword, newPasswordConfirmed, email } = req.body
-    if (!name || !newPassword || !newPasswordConfirmed) {
+    const { name, newPassword, actualPassword, email } = req.body
+    if (!name || !newPassword || !actualPassword) {
       return res.status(400).json({ message: 'Faltan datos (name)' })
     }
-    if (newPassword !== newPasswordConfirmed) {
-      return res.status(400).json({ message: 'Las contraseñas no coinciden' })
+    // if (newPassword !== newPasswordConfirmed) {
+    //   return res.status(400).json({ message: 'Las contraseñas no coinciden' })
+    // }
+    const rUser = res.locals.user
+    if (!rUser) return res.status(400).json({ message: 'Sesión invalida' })
+
+    const userFound = await User.findOne({
+      where: { usuId: rUser.usuId },
+      relations: {
+        dataUser: true,
+      },
+    })
+
+    if (!userFound) return res.status(400).json({ message: 'Sesión invalida' })
+
+    const match = await bcrypt.compare(actualPassword, userFound.usuPassword)
+
+    if (!match) {
+      return res.status(400).json({ message: 'Contraseña incorrecta' })
     }
-    const token = req.get('token')
-    if (!token) {
-      return res.status(400).json({ message: 'No hay sesión iniciada' })
-    }
-    const decodedUser = jwt.verify(token, SECRET) as User
-    if (!decodedUser.usuId) {
-      return res.status(400).json({ message: 'Sesión invalida' })
-    }
-    console.log(decodedUser)
 
     const newPasswordHashed = await bcrypt.hash(newPassword, 10)
 
     const updated = await DataUser.update(
       {
-        datId: decodedUser.dataUser.datId,
+        datId: rUser.dataUser.datId,
       },
       {
         datName: name,
@@ -229,7 +250,7 @@ export const updateUser: HandleRequest<{
 
     const updated2 = await User.update(
       {
-        usuId: decodedUser.usuId,
+        usuId: rUser.usuId,
       },
       {
         usuPassword: newPasswordHashed,
@@ -238,7 +259,7 @@ export const updateUser: HandleRequest<{
     )
 
     const newUser = await User.findOne({
-      where: { usuId: decodedUser.usuId },
+      where: { usuId: rUser.usuId },
       relations: {
         dataUser: true,
       },
@@ -262,10 +283,9 @@ export const updateUser: HandleRequest<{
 
 export const logout: HandleRequest = async (req, res) => {
   try {
-    if (!req.get('token')) {
-      return res.status(400).json({ message: 'No hay sesión iniciada' })
-    }
-    res.clearCookie('token')
+    // if (!req.get('token')) {
+    //   return res.status(400).json({ message: 'No hay sesión iniciada' })
+    // }
     return res.status(200).json({ message: 'Sesión cerrada' })
   } catch (e) {
     return res.status(400).json({ message: 'Error al cerrar sesión', e })
@@ -274,23 +294,12 @@ export const logout: HandleRequest = async (req, res) => {
 
 export const cleanAccount: HandleRequest = async (req, res) => {
   try {
-    const token = req.get('token')
-    if (!token) {
-      return res.status(400).json({ message: 'No hay sesión iniciada' })
-    }
-    const decoded = jwt.verify(token, SECRET) as User
-
-    if (!decoded.usuId) {
-      return res.status(400).json({ message: 'Sesión invalida' })
-    }
+    const rUser = res.locals.user
+    if (!rUser) return res.status(400).json({ message: 'Sesión invalida' })
 
     const semanas = await Semanas.find({
-      where: { user: { usuId: decoded.usuId } },
+      where: { user: { usuId: rUser.usuId } },
     })
-
-    if (!semanas) {
-      return res.status(400).json({ message: 'Sesión invalida' })
-    }
 
     await Semanas.remove(semanas)
 
@@ -310,22 +319,15 @@ export const deleteAccount: HandleRequest<{ password?: string }> = async (
     if (!password) {
       return res.status(400).json({ message: 'Faltan datos' })
     }
-    const token = req.get('token')
-    if (!token) {
-      return res.status(400).json({ message: 'No hay sesión iniciada' })
-    }
-    const decoded = jwt.verify(token, SECRET) as User
 
-    if (!decoded.usuId) {
-      return res.status(400).json({ message: 'Sesión invalida' })
-    }
-    console.log({ usuId: decoded.usuId })
+    const rUser = res.locals.user
+    if (!rUser) return res.status(400).json({ message: 'Sesión invalida' })
 
     const user = await DataUser.findOne({
       where: {
         user: {
           dataUser: {
-            user: { usuId: decoded.usuId },
+            user: { usuId: rUser.usuId },
           },
         },
       },

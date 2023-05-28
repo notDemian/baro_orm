@@ -44,6 +44,15 @@ export class Frecuentes extends BaseEntity {
     type: 'float'
   })
   freAmount!: number
+  
+  @Column({
+    name: 'freCategory',
+    type: 'varchar',
+    length: 63,
+    nullable: true,
+    default: null
+  })
+  freCategory!: string
 
   @Column({
     name: 'freLapse',

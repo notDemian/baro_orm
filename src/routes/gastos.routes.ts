@@ -8,13 +8,14 @@ import {
   getSemanas,
   updateGasto,
 } from '@controllers/gastos.controllers'
+import { authUser } from '@middlewares/ErrorHandlers/Errors'
 
 const router = Router()
 
-router.post('/createGastoDiario', createGastoDiario)
-router.get('/getGastos', getGastos)
-router.get('/getSemanas/:semana?', getSemanas)
-router.get('/getDay/:day?', getDay)
-router.post('/updateGasto', updateGasto)
+router.post('/createGastoDiario', [authUser], createGastoDiario)
+router.get('/getGastos', [authUser], getGastos)
+router.get('/getSemanas/:semana?', [authUser], getSemanas)
+router.get('/getDay/:day?', [authUser], getDay)
+router.post('/updateGasto', [authUser], updateGasto)
 
 export default router

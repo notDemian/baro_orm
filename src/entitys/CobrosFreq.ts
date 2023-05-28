@@ -25,6 +25,14 @@ export class CobrosFreq extends BaseEntity {
   })
   cobDate!: string
 
+  @Column({
+    name: 'cobAmount',
+    type: 'int',
+    nullable: true,
+    default: null
+  })
+  cobAmount!: number
+
   @ManyToOne(() => Frecuentes, (freq) => freq.cobros)
   @JoinColumn()
   frecuente: Frecuentes

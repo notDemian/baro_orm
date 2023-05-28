@@ -10,6 +10,7 @@ import {
   updatePhoto,
   updateUser,
 } from '@controllers/user.controllers'
+import { authUser } from '@middlewares/ErrorHandlers/Errors'
 import multer from '@middlewares/multer'
 import { HandleRequest } from '@utils/types/helpers'
 
@@ -19,13 +20,18 @@ router.get('/', _getAllUsers)
 router.post('/', multer('pfp'), createUser as HandleRequest)
 router.post('/getUser', loginUser)
 
-router.put('/updateUser', updateUser)
+router.put('/updateUser', [authUser], updateUser)
 
-router.post('/updatePhoto', multer('pfp'), updatePhoto as HandleRequest)
+router.post(
+  '/updatePhoto',
+  [authUser],
+  multer('pfp'),
+  updatePhoto as HandleRequest
+)
 
 router.get('/logout', logout)
 
-router.post('/deleteAccount', deleteAccount)
-router.get('/cleanAccount', cleanAccount)
+router.post('/deleteAccount', [authUser], deleteAccount)
+router.get('/cleanAccount', [authUser], cleanAccount)
 
 export default router

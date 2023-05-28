@@ -11,7 +11,7 @@ var _Diarios = require("../entitys/Diarios.js");
 var _Semanas = require("../entitys/Semanas.js");
 var _User = require("../entitys/User.js");
 var _userServices = require("../services/user.services.js");
-var _jsonwebtoken = _interopRequireDefault(require("jsonwebtoken"));
+var _axios = _interopRequireDefault(require("axios"));
 var _moment = _interopRequireDefault(require("moment/moment.js"));
 var _config = require("../config/config.js");
 var _Dates = require("../utils/Dates.js");
@@ -28,7 +28,7 @@ function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; } /* eslint-disable @typescript-eslint/no-unused-vars */ /* eslint-disable @typescript-eslint/no-empty-function */ /* eslint-disable indent */
 var createGastoDiario = /*#__PURE__*/function () {
   var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(req, res) {
-    var _req$body, nombre, desc, monto, icono, today, semStart, semEnd, Amount, token, decodedUser, user, ActualBalance, newBalance, finalDay, semanaFound, semanaCreated, semana, dayCreated, dayFound, _dayCreated, diario;
+    var _req$body, nombre, desc, monto, icono, today, semStart, semEnd, Amount, rUser, user, ActualBalance, newBalance, finalDay, semanaFound, semanaCreated, semana, dayCreated, dayFound, _dayCreated, diario, resIA;
     return _regeneratorRuntime().wrap(function _callee$(_context) {
       while (1) switch (_context.prev = _context.next) {
         case 0:
@@ -55,62 +55,53 @@ var createGastoDiario = /*#__PURE__*/function () {
             message: 'Gasto invalido'
           }));
         case 11:
-          token = req.get('token');
-          if (token) {
+          rUser = res.locals.user;
+          if (rUser) {
             _context.next = 14;
             break;
           }
           return _context.abrupt("return", res.status(400).json({
-            message: 'Token de acceso no válido'
+            message: 'Sesión invalida'
           }));
         case 14:
-          decodedUser = _jsonwebtoken["default"].verify(token, _config.SECRET);
-          if (decodedUser.usuId) {
-            _context.next = 17;
-            break;
-          }
-          return _context.abrupt("return", res.status(400).json({
-            message: 'Token de acceso no válido'
-          }));
-        case 17:
-          _context.next = 19;
+          _context.next = 16;
           return _User.User.findOneOrFail({
             where: {
-              usuId: decodedUser.usuId
+              usuId: rUser.usuId
             },
             relations: {
               dataUser: true
             }
           });
-        case 19:
+        case 16:
           user = _context.sent;
           ActualBalance = user.dataUser.datBalance;
           newBalance = ActualBalance - Amount;
           if (!(ActualBalance < Amount)) {
-            _context.next = 24;
+            _context.next = 21;
             break;
           }
           return _context.abrupt("return", res.status(400).json({
             message: 'No tienes suficiente dinero'
           }));
-        case 24:
-          _context.next = 26;
+        case 21:
+          _context.next = 23;
           return _Semanas.Semanas.findOne({
             where: {
               semEnd: semEnd,
               semStart: semStart,
               user: {
-                usuId: decodedUser.usuId
+                usuId: rUser.usuId
               }
             },
             relations: {
               days: true
             }
           });
-        case 26:
+        case 23:
           semanaFound = _context.sent;
           if (semanaFound) {
-            _context.next = 38;
+            _context.next = 35;
             break;
           }
           semanaCreated = _Semanas.Semanas.create({
@@ -118,41 +109,41 @@ var createGastoDiario = /*#__PURE__*/function () {
             semStart: semStart,
             user: user
           });
-          _context.next = 31;
+          _context.next = 28;
           return semanaCreated.save();
-        case 31:
+        case 28:
           semana = _context.sent;
           dayCreated = _Day.Day.create({
             dayDate: today,
             semana: semana
           });
-          _context.next = 35;
+          _context.next = 32;
           return dayCreated.save();
-        case 35:
+        case 32:
           finalDay = _context.sent;
-          _context.next = 47;
+          _context.next = 44;
           break;
-        case 38:
+        case 35:
           dayFound = semanaFound.days.find(function (day) {
             return day.dayDate === today;
           });
           if (dayFound) {
-            _context.next = 46;
+            _context.next = 43;
             break;
           }
           _dayCreated = _Day.Day.create({
             dayDate: today,
             semana: semanaFound
           });
-          _context.next = 43;
+          _context.next = 40;
           return _dayCreated.save();
-        case 43:
+        case 40:
           finalDay = _context.sent;
-          _context.next = 47;
+          _context.next = 44;
           break;
-        case 46:
+        case 43:
           finalDay = dayFound;
-        case 47:
+        case 44:
           diario = _Diarios.Diarios.create({
             diaAmount: Amount,
             diaDescription: desc,
@@ -160,29 +151,47 @@ var createGastoDiario = /*#__PURE__*/function () {
             diaName: nombre,
             day: finalDay
           });
-          _context.next = 50;
-          return diario.save();
-        case 50:
-          user.dataUser.datBalance = newBalance;
-          _context.next = 53;
-          return user.dataUser.save();
+          _context.prev = 45;
+          _context.next = 48;
+          return _axios["default"].post("".concat(_config.API_IA_URL, "/api/classification/dia"), diario);
+        case 48:
+          resIA = _context.sent;
+          console.log({
+            data: resIA.data
+          });
+          if (resIA && resIA.data && resIA.data.classification) diario.diaCategory = resIA.data.classification;
+          _context.next = 56;
+          break;
         case 53:
+          _context.prev = 53;
+          _context.t0 = _context["catch"](45);
+          console.log({
+            err: _context.t0
+          });
+        case 56:
+          _context.next = 58;
+          return diario.save();
+        case 58:
+          user.dataUser.datBalance = newBalance;
+          _context.next = 61;
+          return user.dataUser.save();
+        case 61:
           return _context.abrupt("return", res.status(200).json({
             message: 'Gasto creado',
             newBalance: newBalance
           }));
-        case 56:
-          _context.prev = 56;
-          _context.t0 = _context["catch"](0);
-          console.log(_context.t0);
+        case 64:
+          _context.prev = 64;
+          _context.t1 = _context["catch"](0);
+          console.log(_context.t1);
           return _context.abrupt("return", res.status(500).json({
             message: 'Usuario no encontrado'
           }));
-        case 60:
+        case 68:
         case "end":
           return _context.stop();
       }
-    }, _callee, null, [[0, 56]]);
+    }, _callee, null, [[0, 64], [45, 53]]);
   }));
   return function createGastoDiario(_x, _x2) {
     return _ref.apply(this, arguments);
@@ -191,39 +200,27 @@ var createGastoDiario = /*#__PURE__*/function () {
 exports.createGastoDiario = createGastoDiario;
 var getGastos = /*#__PURE__*/function () {
   var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(req, res) {
-    var token, decodedUser, gastos;
+    var rUser, gastos;
     return _regeneratorRuntime().wrap(function _callee2$(_context2) {
       while (1) switch (_context2.prev = _context2.next) {
         case 0:
           _context2.prev = 0;
-          token = req.get('token');
-          if (!(!token || token === '')) {
+          rUser = res.locals.user;
+          if (rUser) {
             _context2.next = 4;
             break;
           }
           return _context2.abrupt("return", res.status(400).json({
-            message: 'Token de acceso no válido'
+            message: 'Sesión invalida'
           }));
         case 4:
-          decodedUser = _jsonwebtoken["default"].verify(token, _config.SECRET);
-          if (decodedUser.usuId) {
-            _context2.next = 7;
-            break;
-          }
-          return _context2.abrupt("return", res.status(400).json({
-            message: 'Token de acceso no válido'
-          }));
-        case 7:
-          console.log(decodedUser);
-
-          // get last semana days
-          _context2.next = 10;
+          _context2.next = 6;
           return _Diarios.Diarios.find({
             where: {
               day: {
                 semana: {
                   user: {
-                    usuId: decodedUser.usuId
+                    usuId: rUser.usuId
                   }
                 }
               }
@@ -236,24 +233,24 @@ var getGastos = /*#__PURE__*/function () {
             },
             take: 10
           });
-        case 10:
+        case 6:
           gastos = _context2.sent;
           return _context2.abrupt("return", res.status(200).json({
             message: 'Gastos obtenidos',
             gastos: gastos
           }));
-        case 14:
-          _context2.prev = 14;
+        case 10:
+          _context2.prev = 10;
           _context2.t0 = _context2["catch"](0);
           console.log(_context2.t0);
           return _context2.abrupt("return", res.status(500).json({
             message: 'Error interno'
           }));
-        case 18:
+        case 14:
         case "end":
           return _context2.stop();
       }
-    }, _callee2, null, [[0, 14]]);
+    }, _callee2, null, [[0, 10]]);
   }));
   return function getGastos(_x3, _x4) {
     return _ref2.apply(this, arguments);
@@ -262,7 +259,7 @@ var getGastos = /*#__PURE__*/function () {
 exports.getGastos = getGastos;
 var getSemanas = /*#__PURE__*/function () {
   var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3(req, res) {
-    var semana, semStart, semEnd, semanaStart, semanaEnd, token, decodedUser, semanaFound, dates, stadisticInfo, startDate, endDate, nextWeek, prevWeek, nextWeekFound, prevWeekFound, totalLastWeek, semId, _yield$Diarios$create, sum, finalDays, _loop, _i, _dates, _ret, totalWeek;
+    var semana, semStart, semEnd, semanaStart, semanaEnd, rUser, semanaFound, dates, stadisticInfo, startDate, endDate, nextWeek, prevWeek, nextWeekFound, prevWeekFound, totalLastWeek, semId, _yield$Diarios$create, sum, finalDays, _loop, _i, _dates, _ret, totalWeek;
     return _regeneratorRuntime().wrap(function _callee3$(_context4) {
       while (1) switch (_context4.prev = _context4.next) {
         case 0:
@@ -273,30 +270,21 @@ var getSemanas = /*#__PURE__*/function () {
           semEnd = (0, _Dates.getSemEnd)().format(_Dates.FORMATS.SIMPLE_DATE);
           semanaStart = (0, _Dates.getSemStart)(semana).format(_Dates.FORMATS.SIMPLE_DATE);
           semanaEnd = (0, _Dates.getSemEnd)(semana).format(_Dates.FORMATS.SIMPLE_DATE);
-          token = req.get('token');
-          if (token) {
+          rUser = res.locals.user;
+          if (rUser) {
             _context4.next = 10;
             break;
           }
           return _context4.abrupt("return", res.status(400).json({
-            message: 'Token de acceso no válido'
+            message: 'Sesión invalida'
           }));
         case 10:
-          decodedUser = _jsonwebtoken["default"].verify(token, _config.SECRET);
-          if (decodedUser.usuId) {
-            _context4.next = 13;
-            break;
-          }
-          return _context4.abrupt("return", res.status(400).json({
-            message: 'Token de acceso no válido'
-          }));
-        case 13:
-          _context4.next = 15;
+          _context4.next = 12;
           return _Semanas.Semanas.findOne({
             where: {
               semStart: semana && semana !== '' ? semanaStart : semStart,
               user: {
-                usuId: decodedUser.usuId
+                usuId: rUser.usuId
               }
             },
             order: {
@@ -308,16 +296,16 @@ var getSemanas = /*#__PURE__*/function () {
               }
             }
           });
-        case 15:
+        case 12:
           semanaFound = _context4.sent;
           if (semanaFound) {
-            _context4.next = 18;
+            _context4.next = 15;
             break;
           }
           return _context4.abrupt("return", res.status(400).json({
             message: 'No hay semana'
           }));
-        case 18:
+        case 15:
           dates = [];
           stadisticInfo = {
             avgWeek: 0,
@@ -339,12 +327,26 @@ var getSemanas = /*#__PURE__*/function () {
             nextWeek = (0, _Dates.getSemEnd)().add(1, 'day').format(_Dates.FORMATS.SIMPLE_DATE);
             prevWeek = (0, _Dates.getSemStart)().subtract(1, 'day').format(_Dates.FORMATS.SIMPLE_DATE);
           }
-          _context4.next = 28;
+          _context4.next = 25;
           return _Semanas.Semanas.findOne({
             where: {
               semStart: nextWeek,
               user: {
-                usuId: decodedUser.usuId
+                usuId: rUser.usuId
+              }
+            },
+            order: {
+              semStart: 'DESC'
+            }
+          });
+        case 25:
+          nextWeekFound = _context4.sent;
+          _context4.next = 28;
+          return _Semanas.Semanas.findOne({
+            where: {
+              semStart: prevWeek,
+              user: {
+                usuId: rUser.usuId
               }
             },
             order: {
@@ -352,34 +354,20 @@ var getSemanas = /*#__PURE__*/function () {
             }
           });
         case 28:
-          nextWeekFound = _context4.sent;
-          _context4.next = 31;
-          return _Semanas.Semanas.findOne({
-            where: {
-              semStart: prevWeek,
-              user: {
-                usuId: decodedUser.usuId
-              }
-            },
-            order: {
-              semStart: 'DESC'
-            }
-          });
-        case 31:
           prevWeekFound = _context4.sent;
           nextWeek = nextWeekFound ? nextWeek : null;
           prevWeek = prevWeekFound ? prevWeek : null;
           totalLastWeek = 0;
           if (!prevWeekFound) {
-            _context4.next = 43;
+            _context4.next = 40;
             break;
           }
           semId = prevWeekFound.semId;
-          _context4.next = 39;
+          _context4.next = 36;
           return _Diarios.Diarios.createQueryBuilder('diarios').select('SUM(diarios.diaAmount)', 'sum').innerJoin('day', 'day').where('day.semanaSemId = :semId', {
             semId: semId
           }).getRawOne();
-        case 39:
+        case 36:
           _yield$Diarios$create = _context4.sent;
           sum = _yield$Diarios$create.sum;
           console.log({
@@ -387,7 +375,7 @@ var getSemanas = /*#__PURE__*/function () {
             prevWeekFound: prevWeekFound
           });
           totalLastWeek = sum;
-        case 43:
+        case 40:
           finalDays = [];
           _loop = /*#__PURE__*/_regeneratorRuntime().mark(function _loop() {
             var _yield$Diarios$create2;
@@ -448,24 +436,24 @@ var getSemanas = /*#__PURE__*/function () {
             }, _loop);
           });
           _i = 0, _dates = dates;
-        case 46:
+        case 43:
           if (!(_i < _dates.length)) {
-            _context4.next = 54;
-            break;
-          }
-          return _context4.delegateYield(_loop(), "t0", 48);
-        case 48:
-          _ret = _context4.t0;
-          if (!(_ret === "continue")) {
             _context4.next = 51;
             break;
           }
-          return _context4.abrupt("continue", 51);
-        case 51:
+          return _context4.delegateYield(_loop(), "t0", 45);
+        case 45:
+          _ret = _context4.t0;
+          if (!(_ret === "continue")) {
+            _context4.next = 48;
+            break;
+          }
+          return _context4.abrupt("continue", 48);
+        case 48:
           _i++;
-          _context4.next = 46;
+          _context4.next = 43;
           break;
-        case 54:
+        case 51:
           totalWeek = finalDays.reduce(function (acc, e) {
             if (e) return acc + e.dayTotal;
             return acc;
@@ -483,18 +471,18 @@ var getSemanas = /*#__PURE__*/function () {
             prevWeek: prevWeek,
             stadisticInfo: stadisticInfo
           }));
-        case 61:
-          _context4.prev = 61;
+        case 58:
+          _context4.prev = 58;
           _context4.t1 = _context4["catch"](0);
           console.log(_context4.t1);
           return _context4.abrupt("return", res.status(500).json({
             message: 'Error interno'
           }));
-        case 65:
+        case 62:
         case "end":
           return _context4.stop();
       }
-    }, _callee3, null, [[0, 61]]);
+    }, _callee3, null, [[0, 58]]);
   }));
   return function getSemanas(_x5, _x6) {
     return _ref3.apply(this, arguments);
@@ -503,50 +491,41 @@ var getSemanas = /*#__PURE__*/function () {
 exports.getSemanas = getSemanas;
 var getDay = /*#__PURE__*/function () {
   var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4(req, res) {
-    var _lastDayFound$diarios, day, token, decodedUser, Today, FormatDay, lastDay, nextDay, _yield$Promise$allSet, _yield$Promise$allSet2, dayFoundRes, lastDayFoundRes, nextDayFoundRes, dayFound, lastDayFound, nextDayFound, days, totalLastDay, totalToday, mostExpensiveCharge, diffDays, avgDay, byAmount, dayName;
+    var _lastDayFound$diarios, day, rUser, Today, FormatDay, lastDay, nextDay, _yield$Promise$allSet, _yield$Promise$allSet2, dayFoundRes, lastDayFoundRes, nextDayFoundRes, dayFound, lastDayFound, nextDayFound, days, totalLastDay, totalToday, mostExpensiveCharge, diffDays, avgDay, byAmount, dayName;
     return _regeneratorRuntime().wrap(function _callee4$(_context5) {
       while (1) switch (_context5.prev = _context5.next) {
         case 0:
           _context5.prev = 0;
           day = req.params.day;
-          token = req.get('token');
-          if (token) {
+          rUser = res.locals.user;
+          if (rUser) {
             _context5.next = 5;
             break;
           }
           return _context5.abrupt("return", res.status(400).json({
-            message: 'Token de acceso no válido'
+            message: 'Sesión invalida'
           }));
         case 5:
-          decodedUser = _jsonwebtoken["default"].verify(token, _config.SECRET);
-          if (decodedUser.usuId) {
-            _context5.next = 8;
-            break;
-          }
-          return _context5.abrupt("return", res.status(400).json({
-            message: 'Token de acceso no válido'
-          }));
-        case 8:
           _moment["default"].locale('es');
           Today = (0, _moment["default"])(day);
           if (Today.isValid()) {
-            _context5.next = 12;
+            _context5.next = 9;
             break;
           }
           return _context5.abrupt("return", res.status(400).json({
             message: 'Introduce una fecha válida'
           }));
-        case 12:
+        case 9:
           FormatDay = Today.format(_Dates.FORMATS.SIMPLE_DATE);
           lastDay = Today.subtract(1, 'day').format(_Dates.FORMATS.SIMPLE_DATE);
           nextDay = Today.add(2, 'day').format(_Dates.FORMATS.SIMPLE_DATE);
-          _context5.next = 17;
+          _context5.next = 14;
           return Promise.allSettled([_Day.Day.findOne({
             where: {
               dayDate: FormatDay,
               semana: {
                 user: {
-                  usuId: decodedUser.usuId
+                  usuId: rUser.usuId
                 }
               }
             },
@@ -558,7 +537,7 @@ var getDay = /*#__PURE__*/function () {
               dayDate: lastDay,
               semana: {
                 user: {
-                  usuId: decodedUser.usuId
+                  usuId: rUser.usuId
                 }
               }
             },
@@ -570,7 +549,7 @@ var getDay = /*#__PURE__*/function () {
               dayDate: nextDay,
               semana: {
                 user: {
-                  usuId: decodedUser.usuId
+                  usuId: rUser.usuId
                 }
               }
             },
@@ -578,20 +557,20 @@ var getDay = /*#__PURE__*/function () {
               diarios: true
             }
           })]);
-        case 17:
+        case 14:
           _yield$Promise$allSet = _context5.sent;
           _yield$Promise$allSet2 = _slicedToArray(_yield$Promise$allSet, 3);
           dayFoundRes = _yield$Promise$allSet2[0];
           lastDayFoundRes = _yield$Promise$allSet2[1];
           nextDayFoundRes = _yield$Promise$allSet2[2];
           if (!(dayFoundRes.status === 'rejected' || !dayFoundRes.value)) {
-            _context5.next = 24;
+            _context5.next = 21;
             break;
           }
           return _context5.abrupt("return", res.status(400).json({
             message: 'Día no encontrado'
           }));
-        case 24:
+        case 21:
           dayFound = dayFoundRes.value;
           lastDayFound = lastDayFoundRes.status === 'fulfilled' ? lastDayFoundRes.value : null;
           nextDayFound = nextDayFoundRes.status === 'fulfilled' ? nextDayFoundRes.value : null;
@@ -642,18 +621,18 @@ var getDay = /*#__PURE__*/function () {
             days: days,
             dayName: dayName
           }));
-        case 40:
-          _context5.prev = 40;
+        case 37:
+          _context5.prev = 37;
           _context5.t0 = _context5["catch"](0);
           console.log(_context5.t0);
           return _context5.abrupt("return", res.status(500).json({
             message: 'Error interno'
           }));
-        case 44:
+        case 41:
         case "end":
           return _context5.stop();
       }
-    }, _callee4, null, [[0, 40]]);
+    }, _callee4, null, [[0, 37]]);
   }));
   return function getDay(_x7, _x8) {
     return _ref4.apply(this, arguments);
@@ -662,7 +641,7 @@ var getDay = /*#__PURE__*/function () {
 exports.getDay = getDay;
 var updateGasto = /*#__PURE__*/function () {
   var _ref5 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee5(req, res) {
-    var _req$body2, newDescripcion, newMonto, newIcono, newNombre, id, token, decodedUser, _yield$getBalance, _yield$getBalance2, datBalance, err, diarioFound, diaAmount, delta, newBalance, updatedDiario, updatedBalance;
+    var _req$body2, newDescripcion, newMonto, newIcono, newNombre, id, rUser, _yield$getBalance, _yield$getBalance2, datBalance, err, diarioFound, diaAmount, delta, newBalance, updatedDiario, updatedBalance;
     return _regeneratorRuntime().wrap(function _callee5$(_context6) {
       while (1) switch (_context6.prev = _context6.next) {
         case 0:
@@ -684,67 +663,58 @@ var updateGasto = /*#__PURE__*/function () {
           }));
         case 5:
           _context6.prev = 5;
-          token = req.get('token');
-          if (token) {
+          rUser = res.locals.user;
+          if (rUser) {
             _context6.next = 9;
             break;
           }
           return _context6.abrupt("return", res.status(400).json({
-            message: 'Token de acceso no válido'
+            message: 'Sesión invalida'
           }));
         case 9:
-          decodedUser = _jsonwebtoken["default"].verify(token, _config.SECRET);
-          if (decodedUser.usuId) {
-            _context6.next = 12;
-            break;
-          }
-          return _context6.abrupt("return", res.status(400).json({
-            message: 'Token de acceso no válido'
-          }));
-        case 12:
-          _context6.next = 14;
-          return (0, _userServices.getBalance)(decodedUser.usuId);
-        case 14:
+          _context6.next = 11;
+          return (0, _userServices.getBalance)(rUser.usuId);
+        case 11:
           _yield$getBalance = _context6.sent;
           _yield$getBalance2 = _slicedToArray(_yield$getBalance, 2);
           datBalance = _yield$getBalance2[0];
           err = _yield$getBalance2[1];
           if (!(datBalance === undefined)) {
-            _context6.next = 20;
+            _context6.next = 17;
             break;
           }
           return _context6.abrupt("return", res.status(400).json({
             message: 'Usuario no encontrado'
           }));
-        case 20:
-          _context6.next = 22;
+        case 17:
+          _context6.next = 19;
           return _Diarios.Diarios.findOne({
             where: {
               diaId: id
             }
           });
-        case 22:
+        case 19:
           diarioFound = _context6.sent;
           if (diarioFound) {
-            _context6.next = 25;
+            _context6.next = 22;
             break;
           }
           return _context6.abrupt("return", res.status(400).json({
             message: 'No hay gasto'
           }));
-        case 25:
+        case 22:
           diaAmount = diarioFound.diaAmount;
           delta = diaAmount - newMonto;
           newBalance = datBalance + delta;
           if (!(newBalance < 0)) {
-            _context6.next = 30;
+            _context6.next = 27;
             break;
           }
           return _context6.abrupt("return", res.status(400).json({
             message: 'No puedes introducir esa cantidad'
           }));
-        case 30:
-          _context6.next = 32;
+        case 27:
+          _context6.next = 29;
           return _Diarios.Diarios.update({
             diaId: id
           }, {
@@ -753,48 +723,48 @@ var updateGasto = /*#__PURE__*/function () {
             diaIcon: newIcono,
             diaName: newNombre
           });
-        case 32:
+        case 29:
           updatedDiario = _context6.sent;
           if (updatedDiario.affected) {
-            _context6.next = 35;
+            _context6.next = 32;
             break;
           }
           return _context6.abrupt("return", res.status(400).json({
             message: 'No se pudo actualizar el gasto'
           }));
-        case 35:
-          _context6.next = 37;
+        case 32:
+          _context6.next = 34;
           return _DataUser.DataUser.update({
-            datId: decodedUser.dataUser.datId
+            datId: rUser.dataUser.datId
           }, {
             datBalance: newBalance
           });
-        case 37:
+        case 34:
           updatedBalance = _context6.sent;
           if (updatedBalance.affected) {
-            _context6.next = 40;
+            _context6.next = 37;
             break;
           }
           return _context6.abrupt("return", res.status(400).json({
             message: 'No se pudo actualizar el balance'
           }));
-        case 40:
+        case 37:
           return _context6.abrupt("return", res.status(200).json({
             message: 'Gasto actualizado',
             newBalance: newBalance
           }));
-        case 43:
-          _context6.prev = 43;
+        case 40:
+          _context6.prev = 40;
           _context6.t0 = _context6["catch"](5);
           console.log(_context6.t0);
           return _context6.abrupt("return", res.status(500).json({
             message: 'Error en el servidor'
           }));
-        case 47:
+        case 44:
         case "end":
           return _context6.stop();
       }
-    }, _callee5, null, [[5, 43]]);
+    }, _callee5, null, [[5, 40]]);
   }));
   return function updateGasto(_x9, _x10) {
     return _ref5.apply(this, arguments);
