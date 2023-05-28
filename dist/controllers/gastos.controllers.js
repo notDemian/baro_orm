@@ -152,46 +152,51 @@ var createGastoDiario = /*#__PURE__*/function () {
             day: finalDay
           });
           _context.prev = 45;
-          _context.next = 48;
-          return _axios["default"].post("".concat(_config.API_IA_URL, "/api/classification/dia"), diario);
-        case 48:
+          console.log({
+            API_IA_URL: _config.API_IA_URL
+          });
+          _context.next = 49;
+          return _axios["default"].post("".concat(_config.API_IA_URL, "/api/classification/dia"), diario, {
+            timeout: 100000
+          });
+        case 49:
           resIA = _context.sent;
           console.log({
             data: resIA.data
           });
           if (resIA && resIA.data && resIA.data.classification) diario.diaCategory = resIA.data.classification;
-          _context.next = 56;
+          _context.next = 57;
           break;
-        case 53:
-          _context.prev = 53;
+        case 54:
+          _context.prev = 54;
           _context.t0 = _context["catch"](45);
           console.log({
-            err: _context.t0
+            error: _context.t0.response.data
           });
-        case 56:
-          _context.next = 58;
+        case 57:
+          _context.next = 59;
           return diario.save();
-        case 58:
+        case 59:
           user.dataUser.datBalance = newBalance;
-          _context.next = 61;
+          _context.next = 62;
           return user.dataUser.save();
-        case 61:
+        case 62:
           return _context.abrupt("return", res.status(200).json({
             message: 'Gasto creado',
             newBalance: newBalance
           }));
-        case 64:
-          _context.prev = 64;
+        case 65:
+          _context.prev = 65;
           _context.t1 = _context["catch"](0);
           console.log(_context.t1);
           return _context.abrupt("return", res.status(500).json({
             message: 'Usuario no encontrado'
           }));
-        case 68:
+        case 69:
         case "end":
           return _context.stop();
       }
-    }, _callee, null, [[0, 64], [45, 53]]);
+    }, _callee, null, [[0, 65], [45, 54]]);
   }));
   return function createGastoDiario(_x, _x2) {
     return _ref.apply(this, arguments);

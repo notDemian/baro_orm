@@ -111,15 +111,19 @@ export const createGastoDiario: HandleRequest<{
     })
 
     try {
+      console.log({ API_IA_URL })
       const resIA = await axios.post<GetClassificationResponse>(
         `${API_IA_URL}/api/classification/dia`,
-        diario
+        diario,
+        {
+          timeout: 100_000,
+        }
       )
       console.log({ data: resIA.data })
       if (resIA && resIA.data && resIA.data.classification)
         diario.diaCategory = resIA.data.classification
-    } catch (err) {
-      console.log({ err })
+    } catch (err: any) {
+      console.log({ error: err.response.data })
     }
 
     await diario.save()
