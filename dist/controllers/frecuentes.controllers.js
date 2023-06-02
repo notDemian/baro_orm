@@ -4,7 +4,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" =
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getCobrosFreq = exports.PUT_freq = exports.POST_freq = exports.GET_freq = exports.GET_ALL_freq = exports.DELETE_freq = void 0;
+exports.setCobroFreqAmount = exports.getCobrosFreq = exports.PUT_freq = exports.POST_freq = exports.GET_freq = exports.GET_ALL_freq = exports.DELETE_freq = void 0;
 var _CobrosFreq = require("../entitys/CobrosFreq.js");
 var _Day2 = require("../entitys/Day.js");
 var _Frecuentes = require("../entitys/Frecuentes.js");
@@ -15,7 +15,6 @@ var _config = require("../config/config.js");
 var _Dates = require("../utils/Dates.js");
 var _Numbers = require("../utils/Numbers.js");
 var _helpers = require("../utils/helpers.js");
-var _controller = require("../utils/types/Frecuentes/controller.js");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
@@ -30,7 +29,7 @@ function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; } /* eslint-disable @typescript-eslint/no-unused-vars */ /* eslint-disable @typescript-eslint/no-empty-function */ /* eslint-disable indent */
 var POST_freq = /*#__PURE__*/function () {
   var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(req, res) {
-    var rUser, _req$body, name, amount, lapse, description, isStatic, date, Today, today, startOfWeek, dayFound, todayEntity, semanaFound, endOfWeek, semanaCreated, insertSemanas, dayCreated, _dayCreated, freqCreated, resIA, insertFreq;
+    var rUser, _req$body, name, amount, lapse, description, isStatic, date, Today, today, startOfWeek, dayFound, todayEntity, semanaFound, endOfWeek, semanaCreated, insertSemanas, dayCreated, _dayCreated, freqCreated, resIA, insertFreq, firstCobDate, cobroCreated, insertCobro;
     return _regeneratorRuntime().wrap(function _callee$(_context) {
       while (1) switch (_context.prev = _context.next) {
         case 0:
@@ -53,7 +52,7 @@ var POST_freq = /*#__PURE__*/function () {
             message: 'Datos incompletos'
           }));
         case 7:
-          Today = (0, _moment["default"])(date);
+          Today = (0, _moment["default"])();
           if (Today.isValid()) {
             _context.next = 10;
             break;
@@ -82,7 +81,7 @@ var POST_freq = /*#__PURE__*/function () {
           dayFound = _context.sent;
           todayEntity = dayFound;
           if (dayFound) {
-            _context.next = 40;
+            _context.next = 38;
             break;
           }
           _context.next = 19;
@@ -100,49 +99,46 @@ var POST_freq = /*#__PURE__*/function () {
         case 19:
           semanaFound = _context.sent;
           if (semanaFound) {
-            _context.next = 34;
+            _context.next = 32;
             break;
           }
           endOfWeek = Today.endOf('week').format(_Dates.FORMATS.SIMPLE_DATE);
-          _context.next = 24;
-          return _Semanas.Semanas.create({
+          semanaCreated = _Semanas.Semanas.create({
             semStart: startOfWeek,
             semEnd: endOfWeek,
             user: {
               usuId: rUser.usuId
             }
           });
-        case 24:
-          semanaCreated = _context.sent;
-          _context.next = 27;
+          _context.next = 25;
           return semanaCreated.save();
-        case 27:
+        case 25:
           insertSemanas = _context.sent;
           dayCreated = _Day2.Day.create({
             dayDate: today,
             semana: insertSemanas
           });
-          _context.next = 31;
+          _context.next = 29;
           return dayCreated.save();
-        case 31:
+        case 29:
           todayEntity = _context.sent;
-          _context.next = 38;
+          _context.next = 36;
           break;
-        case 34:
+        case 32:
           _dayCreated = _Day2.Day.create({
             dayDate: today,
             semana: semanaFound
           });
-          _context.next = 37;
+          _context.next = 35;
           return _dayCreated.save();
-        case 37:
+        case 35:
           todayEntity = _context.sent;
-        case 38:
-          _context.next = 41;
+        case 36:
+          _context.next = 39;
           break;
-        case 40:
+        case 38:
           todayEntity = dayFound;
-        case 41:
+        case 39:
           freqCreated = _Frecuentes.Frecuentes.create({
             freName: name,
             freDescription: description,
@@ -154,42 +150,48 @@ var POST_freq = /*#__PURE__*/function () {
               usuId: rUser.usuId
             }
           });
-          _context.prev = 42;
-          _context.next = 45;
+          _context.prev = 40;
+          _context.next = 43;
           return _axios["default"].post("".concat(_config.API_IA_URL, "/api/classification/freq"), freqCreated);
-        case 45:
+        case 43:
           resIA = _context.sent;
-          console.log({
-            data: resIA.data
-          });
           if (resIA && resIA.data && resIA.data.classification) freqCreated.freCategory = resIA.data.classification;
-          _context.next = 53;
+          _context.next = 50;
           break;
-        case 50:
-          _context.prev = 50;
-          _context.t0 = _context["catch"](42);
+        case 47:
+          _context.prev = 47;
+          _context.t0 = _context["catch"](40);
           console.log(_context.t0);
-        case 53:
-          _context.next = 55;
+        case 50:
+          _context.next = 52;
           return freqCreated.save();
-        case 55:
+        case 52:
           insertFreq = _context.sent;
+          firstCobDate = date;
+          cobroCreated = _CobrosFreq.CobrosFreq.create({
+            cobDate: firstCobDate,
+            frecuente: insertFreq
+          });
+          _context.next = 57;
+          return cobroCreated.save();
+        case 57:
+          insertCobro = _context.sent;
           return _context.abrupt("return", res.status(201).json({
             message: 'Gasto creado',
             gasto: insertFreq
           }));
-        case 59:
-          _context.prev = 59;
+        case 61:
+          _context.prev = 61;
           _context.t1 = _context["catch"](0);
           console.log(_context.t1);
           return _context.abrupt("return", res.status(500).json({
             message: 'Error al crear el gasto'
           }));
-        case 63:
+        case 65:
         case "end":
           return _context.stop();
       }
-    }, _callee, null, [[0, 59], [42, 50]]);
+    }, _callee, null, [[0, 61], [40, 47]]);
   }));
   return function POST_freq(_x, _x2) {
     return _ref.apply(this, arguments);
@@ -198,7 +200,7 @@ var POST_freq = /*#__PURE__*/function () {
 exports.POST_freq = POST_freq;
 var GET_ALL_freq = /*#__PURE__*/function () {
   var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(req, res) {
-    var rUser, frecuentesFound, _Day, proximos, notifications, _iterator, _step, freq, lastCobDate, cobroFound, lastCobDay, nextCob, daysTillNextCob, cobroCreated, nextCobDate, priorityColor;
+    var rUser, frecuentesFound, _Day, proximos, notifications, _iterator, _step, freq, cobroFound, nextCob, daysTillNextCob, nextCobDate, priorityColor;
     return _regeneratorRuntime().wrap(function _callee2$(_context2) {
       while (1) switch (_context2.prev = _context2.next) {
         case 0:
@@ -215,7 +217,8 @@ var GET_ALL_freq = /*#__PURE__*/function () {
           _context2.next = 6;
           return _Frecuentes.Frecuentes.find({
             relations: {
-              day: true
+              day: true,
+              cobros: true
             },
             where: {
               user: {
@@ -229,89 +232,58 @@ var GET_ALL_freq = /*#__PURE__*/function () {
           proximos = [];
           notifications = [];
           _iterator = _createForOfIteratorHelper(frecuentesFound);
-          _context2.prev = 11;
-          _iterator.s();
-        case 13:
-          if ((_step = _iterator.n()).done) {
-            _context2.next = 33;
-            break;
-          }
-          freq = _step.value;
-          lastCobDate = freq.day.dayDate;
-          _context2.next = 18;
-          return _CobrosFreq.CobrosFreq.findOne({
-            where: {
-              frecuente: {
-                freId: freq.freId
-              }
-            },
-            order: {
-              cobDate: 'DESC'
+          try {
+            for (_iterator.s(); !(_step = _iterator.n()).done;) {
+              freq = _step.value;
+              cobroFound = freq.cobros.sort(function (a, b) {
+                return (0, _moment["default"])(b.cobDate).unix() - (0, _moment["default"])(a.cobDate).unix();
+              })[0];
+              nextCob = (0, _moment["default"])(cobroFound.cobDate);
+              daysTillNextCob = nextCob.diff(_Day, 'days') + 1;
+              /* if (daysTillNextCob <= 0) {
+                const cobroCreated = CobrosFreq.create({
+                  cobDate: nextCob.format(FORMATS.SIMPLE_DATE),
+                  frecuente: { freId: freq.freId },
+                })
+                    const cobroSaved = await cobroCreated.save()
+                  const noti = getFreqNotification(freq.freName, freq.freAmount)
+                  const notiCreated = Notification.create({
+                  notContent: noti,
+                })
+                  const notiSaved = await notiCreated.save()
+                  notifications.push(noti)
+              } */
+              nextCobDate = nextCob.format(_Dates.FORMATS.SIMPLE_DATE);
+              priorityColor = (0, _helpers.getPriorityColor)(daysTillNextCob);
+              proximos.push(_objectSpread(_objectSpread({}, freq), {}, {
+                nextCobDate: nextCobDate,
+                daysTillNextCob: daysTillNextCob,
+                priorityColor: priorityColor
+              }));
             }
-          });
-        case 18:
-          cobroFound = _context2.sent;
-          if (cobroFound) {
-            lastCobDate = cobroFound.cobDate;
+          } catch (err) {
+            _iterator.e(err);
+          } finally {
+            _iterator.f();
           }
-          lastCobDay = (0, _moment["default"])(lastCobDate);
-          nextCob = _controller.LAPSES_TO_INT[freq.freLapse](lastCobDay);
-          daysTillNextCob = nextCob.diff(_Day, 'days') + 1;
-          if (!(daysTillNextCob <= 0)) {
-            _context2.next = 28;
-            break;
-          }
-          cobroCreated = _CobrosFreq.CobrosFreq.create({
-            cobDate: nextCob.format(_Dates.FORMATS.SIMPLE_DATE),
-            frecuente: {
-              freId: freq.freId
-            }
-          });
-          _context2.next = 27;
-          return cobroCreated.save();
-        case 27:
-          notifications.push("Se ha cobrado ".concat(freq.freName, " por $").concat(freq.freAmount));
-        case 28:
-          nextCobDate = nextCob.format(_Dates.FORMATS.SIMPLE_DATE);
-          priorityColor = (0, _helpers.getPriorityColor)(daysTillNextCob);
-          proximos.push(_objectSpread(_objectSpread({}, freq), {}, {
-            nextCobDate: nextCobDate,
-            daysTillNextCob: daysTillNextCob,
-            priorityColor: priorityColor
-          }));
-        case 31:
-          _context2.next = 13;
-          break;
-        case 33:
-          _context2.next = 38;
-          break;
-        case 35:
-          _context2.prev = 35;
-          _context2.t0 = _context2["catch"](11);
-          _iterator.e(_context2.t0);
-        case 38:
-          _context2.prev = 38;
-          _iterator.f();
-          return _context2.finish(38);
-        case 41:
           return _context2.abrupt("return", res.status(200).json({
             message: 'Gastos frecuentes',
             frecuentes: frecuentesFound,
             proximos: proximos,
             notifications: notifications
           }));
-        case 44:
-          _context2.prev = 44;
-          _context2.t1 = _context2["catch"](0);
-          console.log(_context2.t1);
+        case 15:
+          _context2.prev = 15;
+          _context2.t0 = _context2["catch"](0);
+          console.log(_context2.t0);
           return _context2.abrupt("return", res.status(500).json({
             message: 'Error al obtener los gastos'
           }));
-        case 48:
+        case 19:
         case "end":
           return _context2.stop();
       }
-    }, _callee2, null, [[0, 44], [11, 35, 38, 41]]);
+    }, _callee2, null, [[0, 15]]);
   }));
   return function GET_ALL_freq(_x3, _x4) {
     return _ref2.apply(this, arguments);
@@ -389,7 +361,7 @@ var GET_freq = /*#__PURE__*/function () {
 exports.GET_freq = GET_freq;
 var PUT_freq = /*#__PURE__*/function () {
   var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4(req, res) {
-    var id, _req$body2, name, amount, lapse, description, rUser, freqFound;
+    var id, _req$body2, name, amount, lapse, description, rUser, freqFound, freqEdited;
     return _regeneratorRuntime().wrap(function _callee4$(_context4) {
       while (1) switch (_context4.prev = _context4.next) {
         case 0:
@@ -481,15 +453,13 @@ var PUT_freq = /*#__PURE__*/function () {
           if (description) {
             freqFound.freDescription = description;
           }
-          console.log({
-            freqFound: freqFound
-          });
-          _context4.next = 28;
+          _context4.next = 27;
           return freqFound.save();
-        case 28:
+        case 27:
+          freqEdited = _context4.sent;
           return _context4.abrupt("return", res.status(200).json({
             message: 'Gasto frecuente',
-            gasto: freqFound
+            gasto: freqEdited
           }));
         case 31:
           _context4.prev = 31;
@@ -617,25 +587,116 @@ var getCobrosFreq = /*#__PURE__*/function () {
             message: 'Gasto frecuente no encontrado'
           }));
         case 12:
+          freqFound.cobros = freqFound.cobros.sort(function (a, b) {
+            return (0, _moment["default"])(a.cobDate).unix() - (0, _moment["default"])(b.cobDate).unix();
+          });
+          // delete last cobro
+          freqFound.cobros.pop();
           return _context6.abrupt("return", res.status(200).json({
             message: 'Cobros obtenidos',
             freq: freqFound
           }));
-        case 15:
-          _context6.prev = 15;
+        case 17:
+          _context6.prev = 17;
           _context6.t0 = _context6["catch"](0);
           console.log(_context6.t0);
           return _context6.abrupt("return", res.status(500).json({
             message: 'Error al obtener los cobros'
           }));
-        case 19:
+        case 21:
         case "end":
           return _context6.stop();
       }
-    }, _callee6, null, [[0, 15]]);
+    }, _callee6, null, [[0, 17]]);
   }));
   return function getCobrosFreq(_x11, _x12) {
     return _ref6.apply(this, arguments);
   };
 }();
 exports.getCobrosFreq = getCobrosFreq;
+var setCobroFreqAmount = /*#__PURE__*/function () {
+  var _ref7 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee7(req, res) {
+    var id, monto, rUser, cobroFound, cobMoment, cobro;
+    return _regeneratorRuntime().wrap(function _callee7$(_context7) {
+      while (1) switch (_context7.prev = _context7.next) {
+        case 0:
+          _context7.prev = 0;
+          id = req.params.id;
+          monto = req.body.monto;
+          if (!(!id || !(0, _Numbers.isNumber)(id))) {
+            _context7.next = 5;
+            break;
+          }
+          return _context7.abrupt("return", res.status(400).json({
+            message: 'Id no válido'
+          }));
+        case 5:
+          if (!(!monto || !(0, _Numbers.isNumber)(monto))) {
+            _context7.next = 7;
+            break;
+          }
+          return _context7.abrupt("return", res.status(400).json({
+            message: 'Monto no válido'
+          }));
+        case 7:
+          rUser = res.locals.user;
+          if (rUser) {
+            _context7.next = 10;
+            break;
+          }
+          return _context7.abrupt("return", res.status(400).json({
+            message: 'Sesión invalida'
+          }));
+        case 10:
+          _context7.next = 12;
+          return _CobrosFreq.CobrosFreq.findOne({
+            where: {
+              cobId: id
+            }
+          });
+        case 12:
+          cobroFound = _context7.sent;
+          if (cobroFound) {
+            _context7.next = 15;
+            break;
+          }
+          return _context7.abrupt("return", res.status(404).json({
+            message: 'Cobro no encontrado'
+          }));
+        case 15:
+          cobMoment = (0, _moment["default"])(cobroFound.cobDate); // no se puede modificar un cobro que ya paso
+          if (!cobMoment.isBefore((0, _moment["default"])())) {
+            _context7.next = 18;
+            break;
+          }
+          return _context7.abrupt("return", res.status(400).json({
+            message: 'Cobro ya pasado'
+          }));
+        case 18:
+          cobroFound.cobAmount = monto;
+          _context7.next = 21;
+          return cobroFound.save();
+        case 21:
+          cobro = _context7.sent;
+          return _context7.abrupt("return", res.status(200).json({
+            message: 'Cobro agregado',
+            cobro: cobro
+          }));
+        case 25:
+          _context7.prev = 25;
+          _context7.t0 = _context7["catch"](0);
+          console.log(_context7.t0);
+          return _context7.abrupt("return", res.status(500).json({
+            message: 'Error al obtener los cobros'
+          }));
+        case 29:
+        case "end":
+          return _context7.stop();
+      }
+    }, _callee7, null, [[0, 25]]);
+  }));
+  return function setCobroFreqAmount(_x13, _x14) {
+    return _ref7.apply(this, arguments);
+  };
+}();
+exports.setCobroFreqAmount = setCobroFreqAmount;

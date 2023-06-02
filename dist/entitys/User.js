@@ -10,7 +10,8 @@ var _Semanas = require("./Semanas.js");
 var _Frecuentes = require("./Frecuentes.js");
 var _Ingresos = require("./Ingresos.js");
 var _DataUser = require("./DataUser.js");
-var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _dec8, _dec9, _class, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, _descriptor7;
+var _Notification = require("./Notification.js");
+var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _dec8, _dec9, _dec10, _class, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, _descriptor7, _descriptor8;
 function _initializerDefineProperty(target, property, descriptor, context) { if (!descriptor) return; Object.defineProperty(target, property, { enumerable: descriptor.enumerable, configurable: descriptor.configurable, writable: descriptor.writable, value: descriptor.initializer ? descriptor.initializer.call(context) : void 0 }); }
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
@@ -61,6 +62,10 @@ var User = (_dec = (0, _typeorm.Entity)({
   return _Ingresos.Ingresos;
 }, function (ing) {
   return ing.user;
+}), _dec10 = (0, _typeorm.OneToMany)(function () {
+  return _Notification.Notification;
+}, function (not) {
+  return not.user;
 }), _dec(_class = (_class2 = /*#__PURE__*/function (_BaseEntity) {
   _inherits(User, _BaseEntity);
   var _super = _createSuper(User);
@@ -78,6 +83,7 @@ var User = (_dec = (0, _typeorm.Entity)({
     _initializerDefineProperty(_assertThisInitialized(_this), "semanas", _descriptor5, _assertThisInitialized(_this));
     _initializerDefineProperty(_assertThisInitialized(_this), "frecuentes", _descriptor6, _assertThisInitialized(_this));
     _initializerDefineProperty(_assertThisInitialized(_this), "ingresos", _descriptor7, _assertThisInitialized(_this));
+    _initializerDefineProperty(_assertThisInitialized(_this), "notifications", _descriptor8, _assertThisInitialized(_this));
     return _this;
   }
   return _createClass(User);
@@ -112,6 +118,11 @@ var User = (_dec = (0, _typeorm.Entity)({
   writable: true,
   initializer: null
 }), _descriptor7 = _applyDecoratedDescriptor(_class2.prototype, "ingresos", [_dec9], {
+  configurable: true,
+  enumerable: true,
+  writable: true,
+  initializer: null
+}), _descriptor8 = _applyDecoratedDescriptor(_class2.prototype, "notifications", [_dec10], {
   configurable: true,
   enumerable: true,
   writable: true,

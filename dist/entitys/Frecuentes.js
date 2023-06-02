@@ -78,10 +78,6 @@ var Frecuentes = (_dec = (0, _typeorm.Entity)({
   return _CobrosFreq.CobrosFreq;
 }, function (cobros) {
   return cobros.frecuente;
-}, {
-  cascade: true,
-  onDelete: 'CASCADE',
-  onUpdate: 'CASCADE'
 }), _dec(_class = (_class2 = /*#__PURE__*/function (_BaseEntity) {
   _inherits(Frecuentes, _BaseEntity);
   var _super = _createSuper(Frecuentes);

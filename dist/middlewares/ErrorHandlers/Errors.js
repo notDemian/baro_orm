@@ -14,9 +14,6 @@ var authUser = function authUser(req, res, next) {
   var filename = (_req$file = req.file) === null || _req$file === void 0 ? void 0 : _req$file.filename;
   try {
     var token = req.get('token');
-    console.log({
-      token: token
-    });
     if (!token || token === '') {
       filename && (0, _helpers.delFile)(filename);
       return res.status(401).json({
@@ -25,10 +22,6 @@ var authUser = function authUser(req, res, next) {
     }
     var jwt_ = _jsonwebtoken["default"].verify(token, _config.SECRET);
     var decodedUser = _zod.z_UserToken.safeParse(jwt_);
-    console.log({
-      decodedUser: decodedUser,
-      jwt_: jwt_
-    });
     if (!decodedUser.success) {
       filename && (0, _helpers.delFile)(filename);
       return res.status(401).json({

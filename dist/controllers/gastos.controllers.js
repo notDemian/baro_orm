@@ -152,51 +152,45 @@ var createGastoDiario = /*#__PURE__*/function () {
             day: finalDay
           });
           _context.prev = 45;
-          console.log({
-            API_IA_URL: _config.API_IA_URL
-          });
-          _context.next = 49;
+          _context.next = 48;
           return _axios["default"].post("".concat(_config.API_IA_URL, "/api/classification/dia"), diario, {
             timeout: 100000
           });
-        case 49:
+        case 48:
           resIA = _context.sent;
-          console.log({
-            data: resIA.data
-          });
           if (resIA && resIA.data && resIA.data.classification) diario.diaCategory = resIA.data.classification;
-          _context.next = 57;
+          _context.next = 55;
           break;
-        case 54:
-          _context.prev = 54;
+        case 52:
+          _context.prev = 52;
           _context.t0 = _context["catch"](45);
           console.log({
             error: _context.t0.response.data
           });
-        case 57:
-          _context.next = 59;
+        case 55:
+          _context.next = 57;
           return diario.save();
-        case 59:
+        case 57:
           user.dataUser.datBalance = newBalance;
-          _context.next = 62;
+          _context.next = 60;
           return user.dataUser.save();
-        case 62:
+        case 60:
           return _context.abrupt("return", res.status(200).json({
             message: 'Gasto creado',
             newBalance: newBalance
           }));
-        case 65:
-          _context.prev = 65;
+        case 63:
+          _context.prev = 63;
           _context.t1 = _context["catch"](0);
           console.log(_context.t1);
           return _context.abrupt("return", res.status(500).json({
             message: 'Usuario no encontrado'
           }));
-        case 69:
+        case 67:
         case "end":
           return _context.stop();
       }
-    }, _callee, null, [[0, 65], [45, 54]]);
+    }, _callee, null, [[0, 63], [45, 52]]);
   }));
   return function createGastoDiario(_x, _x2) {
     return _ref.apply(this, arguments);
@@ -205,7 +199,7 @@ var createGastoDiario = /*#__PURE__*/function () {
 exports.createGastoDiario = createGastoDiario;
 var getGastos = /*#__PURE__*/function () {
   var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(req, res) {
-    var rUser, gastos;
+    var rUser, today, gastos;
     return _regeneratorRuntime().wrap(function _callee2$(_context2) {
       while (1) switch (_context2.prev = _context2.next) {
         case 0:
@@ -219,7 +213,8 @@ var getGastos = /*#__PURE__*/function () {
             message: 'Sesión invalida'
           }));
         case 4:
-          _context2.next = 6;
+          today = (0, _moment["default"])().format(_Dates.FORMATS.SIMPLE_DATE); // get last semana days
+          _context2.next = 7;
           return _Diarios.Diarios.find({
             where: {
               day: {
@@ -227,7 +222,8 @@ var getGastos = /*#__PURE__*/function () {
                   user: {
                     usuId: rUser.usuId
                   }
-                }
+                },
+                dayDate: today
               }
             },
             relations: {
@@ -238,24 +234,24 @@ var getGastos = /*#__PURE__*/function () {
             },
             take: 10
           });
-        case 6:
+        case 7:
           gastos = _context2.sent;
           return _context2.abrupt("return", res.status(200).json({
             message: 'Gastos obtenidos',
             gastos: gastos
           }));
-        case 10:
-          _context2.prev = 10;
+        case 11:
+          _context2.prev = 11;
           _context2.t0 = _context2["catch"](0);
           console.log(_context2.t0);
           return _context2.abrupt("return", res.status(500).json({
             message: 'Error interno'
           }));
-        case 14:
+        case 15:
         case "end":
           return _context2.stop();
       }
-    }, _callee2, null, [[0, 10]]);
+    }, _callee2, null, [[0, 11]]);
   }));
   return function getGastos(_x3, _x4) {
     return _ref2.apply(this, arguments);
@@ -364,7 +360,7 @@ var getSemanas = /*#__PURE__*/function () {
           prevWeek = prevWeekFound ? prevWeek : null;
           totalLastWeek = 0;
           if (!prevWeekFound) {
-            _context4.next = 40;
+            _context4.next = 39;
             break;
           }
           semId = prevWeekFound.semId;
@@ -375,12 +371,8 @@ var getSemanas = /*#__PURE__*/function () {
         case 36:
           _yield$Diarios$create = _context4.sent;
           sum = _yield$Diarios$create.sum;
-          console.log({
-            sum: sum,
-            prevWeekFound: prevWeekFound
-          });
           totalLastWeek = sum;
-        case 40:
+        case 39:
           finalDays = [];
           _loop = /*#__PURE__*/_regeneratorRuntime().mark(function _loop() {
             var _yield$Diarios$create2;
@@ -441,33 +433,30 @@ var getSemanas = /*#__PURE__*/function () {
             }, _loop);
           });
           _i = 0, _dates = dates;
-        case 43:
+        case 42:
           if (!(_i < _dates.length)) {
-            _context4.next = 51;
+            _context4.next = 50;
             break;
           }
-          return _context4.delegateYield(_loop(), "t0", 45);
-        case 45:
+          return _context4.delegateYield(_loop(), "t0", 44);
+        case 44:
           _ret = _context4.t0;
           if (!(_ret === "continue")) {
-            _context4.next = 48;
+            _context4.next = 47;
             break;
           }
-          return _context4.abrupt("continue", 48);
-        case 48:
+          return _context4.abrupt("continue", 47);
+        case 47:
           _i++;
-          _context4.next = 43;
+          _context4.next = 42;
           break;
-        case 51:
+        case 50:
           totalWeek = finalDays.reduce(function (acc, e) {
             if (e) return acc + e.dayTotal;
             return acc;
           }, 0);
           stadisticInfo.avgWeek = totalWeek / finalDays.length;
           stadisticInfo.vsLastWeek = totalLastWeek - totalWeek;
-          console.log({
-            finalDays: finalDays
-          });
           return _context4.abrupt("return", res.status(200).json({
             message: 'semanas recuperadas exitosamente',
             finalDays: finalDays,
@@ -476,18 +465,18 @@ var getSemanas = /*#__PURE__*/function () {
             prevWeek: prevWeek,
             stadisticInfo: stadisticInfo
           }));
-        case 58:
-          _context4.prev = 58;
+        case 56:
+          _context4.prev = 56;
           _context4.t1 = _context4["catch"](0);
           console.log(_context4.t1);
           return _context4.abrupt("return", res.status(500).json({
             message: 'Error interno'
           }));
-        case 62:
+        case 60:
         case "end":
           return _context4.stop();
       }
-    }, _callee3, null, [[0, 58]]);
+    }, _callee3, null, [[0, 56]]);
   }));
   return function getSemanas(_x5, _x6) {
     return _ref3.apply(this, arguments);

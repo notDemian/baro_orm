@@ -4,9 +4,10 @@ function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" =
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.CobrosFreq = void 0;
+exports.Notification = void 0;
 var _typeorm = require("typeorm");
-var _Frecuentes = require("./Frecuentes.js");
+var _User = require("./User.js");
+var _controller = require("../utils/types/Frecuentes/controller.js");
 var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _class, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4;
 function _initializerDefineProperty(target, property, descriptor, context) { if (!descriptor) return; Object.defineProperty(target, property, { enumerable: descriptor.enumerable, configurable: descriptor.configurable, writable: descriptor.writable, value: descriptor.initializer ? descriptor.initializer.call(context) : void 0 }); }
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
@@ -24,64 +25,64 @@ function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _ty
 function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
 function _applyDecoratedDescriptor(target, property, decorators, descriptor, context) { var desc = {}; Object.keys(descriptor).forEach(function (key) { desc[key] = descriptor[key]; }); desc.enumerable = !!desc.enumerable; desc.configurable = !!desc.configurable; if ('value' in desc || desc.initializer) { desc.writable = true; } desc = decorators.slice().reverse().reduce(function (desc, decorator) { return decorator(target, property, desc) || desc; }, desc); if (context && desc.initializer !== void 0) { desc.value = desc.initializer ? desc.initializer.call(context) : void 0; desc.initializer = undefined; } if (desc.initializer === void 0) { Object.defineProperty(target, property, desc); desc = null; } return desc; }
 function _initializerWarningHelper(descriptor, context) { throw new Error('Decorating class property failed. Please ensure that ' + 'proposal-class-properties is enabled and runs after the decorators transform.'); }
-var CobrosFreq = (_dec = (0, _typeorm.Entity)({
-  name: 'cobros_fre'
+var Notification = (_dec = (0, _typeorm.Entity)({
+  name: 'notification'
 }), _dec2 = (0, _typeorm.PrimaryGeneratedColumn)({
-  name: 'cobId',
+  name: 'notId',
   type: 'int'
 }), _dec3 = (0, _typeorm.Column)({
-  name: 'cobDate',
+  name: 'notContent',
   type: 'varchar',
-  length: 20
+  length: 255
 }), _dec4 = (0, _typeorm.Column)({
-  name: 'cobAmount',
-  type: 'float',
-  nullable: true,
-  "default": null
+  name: 'notStatus',
+  type: 'varchar',
+  length: 255,
+  "default": _controller.STATUS_FRECUENTE.NO_LEIDO
 }), _dec5 = (0, _typeorm.ManyToOne)(function () {
-  return _Frecuentes.Frecuentes;
-}, function (freq) {
-  return freq.cobros;
+  return _User.User;
+}, function (user) {
+  return user.notifications;
 }, {
   cascade: true,
   onDelete: 'CASCADE',
   onUpdate: 'CASCADE'
 }), _dec6 = (0, _typeorm.JoinColumn)(), _dec(_class = (_class2 = /*#__PURE__*/function (_BaseEntity) {
-  _inherits(CobrosFreq, _BaseEntity);
-  var _super = _createSuper(CobrosFreq);
-  function CobrosFreq() {
+  _inherits(Notification, _BaseEntity);
+  var _super = _createSuper(Notification);
+  function Notification() {
     var _this;
-    _classCallCheck(this, CobrosFreq);
+    _classCallCheck(this, Notification);
     for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
       args[_key] = arguments[_key];
     }
     _this = _super.call.apply(_super, [this].concat(args));
-    _initializerDefineProperty(_assertThisInitialized(_this), "cobId", _descriptor, _assertThisInitialized(_this));
-    _initializerDefineProperty(_assertThisInitialized(_this), "cobDate", _descriptor2, _assertThisInitialized(_this));
-    _initializerDefineProperty(_assertThisInitialized(_this), "cobAmount", _descriptor3, _assertThisInitialized(_this));
-    _initializerDefineProperty(_assertThisInitialized(_this), "frecuente", _descriptor4, _assertThisInitialized(_this));
+    _initializerDefineProperty(_assertThisInitialized(_this), "notId", _descriptor, _assertThisInitialized(_this));
+    _initializerDefineProperty(_assertThisInitialized(_this), "notContent", _descriptor2, _assertThisInitialized(_this));
+    _initializerDefineProperty(_assertThisInitialized(_this), "notStatus", _descriptor3, _assertThisInitialized(_this));
+    _initializerDefineProperty(_assertThisInitialized(_this), "user", _descriptor4, _assertThisInitialized(_this));
     return _this;
   }
-  return _createClass(CobrosFreq);
-}(_typeorm.BaseEntity), (_descriptor = _applyDecoratedDescriptor(_class2.prototype, "cobId", [_dec2], {
+  return _createClass(Notification);
+}(_typeorm.BaseEntity), (_descriptor = _applyDecoratedDescriptor(_class2.prototype, "notId", [_dec2], {
   configurable: true,
   enumerable: true,
   writable: true,
   initializer: null
-}), _descriptor2 = _applyDecoratedDescriptor(_class2.prototype, "cobDate", [_dec3], {
+}), _descriptor2 = _applyDecoratedDescriptor(_class2.prototype, "notContent", [_dec3], {
   configurable: true,
   enumerable: true,
   writable: true,
   initializer: null
-}), _descriptor3 = _applyDecoratedDescriptor(_class2.prototype, "cobAmount", [_dec4], {
+}), _descriptor3 = _applyDecoratedDescriptor(_class2.prototype, "notStatus", [_dec4], {
   configurable: true,
   enumerable: true,
   writable: true,
   initializer: null
-}), _descriptor4 = _applyDecoratedDescriptor(_class2.prototype, "frecuente", [_dec5, _dec6], {
+}), _descriptor4 = _applyDecoratedDescriptor(_class2.prototype, "user", [_dec5, _dec6], {
   configurable: true,
   enumerable: true,
   writable: true,
   initializer: null
 })), _class2)) || _class);
-exports.CobrosFreq = CobrosFreq;
+exports.Notification = Notification;

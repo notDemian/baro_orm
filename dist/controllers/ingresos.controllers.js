@@ -94,23 +94,22 @@ var updateIngreso = /*#__PURE__*/function () {
           }));
         case 9:
           Today = (0, _moment["default"])().format(_Dates.FORMATS.SIMPLE_DATE);
-          console.log(rUser);
-          _context2.next = 13;
+          _context2.next = 12;
           return (0, _userServices.getBalance)(rUser.usuId);
-        case 13:
+        case 12:
           _yield$getBalance = _context2.sent;
           _yield$getBalance2 = _slicedToArray(_yield$getBalance, 3);
           datBalance = _yield$getBalance2[0];
           err = _yield$getBalance2[1];
           userBD = _yield$getBalance2[2];
           if (!(datBalance === undefined || userBD === undefined)) {
-            _context2.next = 20;
+            _context2.next = 19;
             break;
           }
           return _context2.abrupt("return", res.status(400).json({
             message: err !== null && err !== void 0 ? err : 'Error'
           }));
-        case 20:
+        case 19:
           newBalance = datBalance + parseFloat(ingreso);
           ingresoInsert = _Ingresos.Ingresos.create({
             ingAmount: parseFloat(ingreso),
@@ -119,41 +118,41 @@ var updateIngreso = /*#__PURE__*/function () {
             ingDescription: desc,
             user: userBD
           });
-          _context2.next = 24;
+          _context2.next = 23;
           return ingresoInsert.save();
-        case 24:
-          _context2.next = 26;
+        case 23:
+          _context2.next = 25;
           return _DataUser.DataUser.update({
             datId: rUser.dataUser.datId
           }, {
             datBalance: newBalance
           });
-        case 26:
+        case 25:
           updatedBalance = _context2.sent;
           if (updatedBalance.affected) {
-            _context2.next = 29;
+            _context2.next = 28;
             break;
           }
           return _context2.abrupt("return", res.status(400).json({
             message: 'Error al actualizar el balance'
           }));
-        case 29:
+        case 28:
           return _context2.abrupt("return", res.status(200).json({
             message: 'Ingreso actualizado',
             newBalance: newBalance
           }));
-        case 32:
-          _context2.prev = 32;
+        case 31:
+          _context2.prev = 31;
           _context2.t0 = _context2["catch"](5);
           console.log(_context2.t0);
           return _context2.abrupt("return", res.status(500).json({
             message: 'Error en el servidor'
           }));
-        case 36:
+        case 35:
         case "end":
           return _context2.stop();
       }
-    }, _callee2, null, [[5, 32]]);
+    }, _callee2, null, [[5, 31]]);
   }));
   return function updateIngreso(_x3, _x4) {
     return _ref2.apply(this, arguments);

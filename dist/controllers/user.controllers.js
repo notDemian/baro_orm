@@ -119,30 +119,28 @@ var createUser = /*#__PURE__*/function () {
           // if (!req.file) {
           //   return res.status(400).json({ message: 'No hay archivo' })
           // }
-          console.log('file ->', req.file);
-          console.log('body ->', req.body);
           _ref3 = (_req$file = req.file) !== null && _req$file !== void 0 ? _req$file : {
             filename: 'default.png'
           }, filename = _ref3.filename;
-          _context2.next = 17;
+          _context2.next = 15;
           return _bcrypt["default"].hash(contrasena, 10);
-        case 17:
+        case 15:
           encryptedPassword = _context2.sent;
           dataUser = _DataUser.DataUser.create({
             datName: nombre,
             datPhoto: filename
           });
-          _context2.next = 21;
+          _context2.next = 19;
           return dataUser.save();
-        case 21:
+        case 19:
           user = _User.User.create({
             usuEmail: correo,
             usuPassword: encryptedPassword,
             dataUser: dataUser
           });
-          _context2.next = 24;
+          _context2.next = 22;
           return user.save();
-        case 24:
+        case 22:
           tokenObj = {
             usuId: user.usuId,
             dataUser: {
@@ -156,34 +154,34 @@ var createUser = /*#__PURE__*/function () {
             user: userWithoutPassword,
             token: token
           }));
-        case 30:
-          _context2.prev = 30;
+        case 28:
+          _context2.prev = 28;
           _context2.t0 = _context2["catch"](0);
           console.log('error ->', _context2.t0);
           if (!(0, _helpers2.queryFailedGuard)(_context2.t0)) {
-            _context2.next = 37;
+            _context2.next = 35;
             break;
           }
           if (!(_context2.t0.code === 'ER_DUP_ENTRY')) {
-            _context2.next = 36;
+            _context2.next = 34;
             break;
           }
           return _context2.abrupt("return", res.status(400).json({
             message: 'El correo ya está en uso'
           }));
-        case 36:
+        case 34:
           return _context2.abrupt("return", res.status(400).json({
             message: 'Datos inválidos'
           }));
-        case 37:
+        case 35:
           return _context2.abrupt("return", res.status(500).send({
             message: 'Error interno '
           }));
-        case 38:
+        case 36:
         case "end":
           return _context2.stop();
       }
-    }, _callee2, null, [[0, 30]]);
+    }, _callee2, null, [[0, 28]]);
   }));
   return function createUser(_x3, _x4) {
     return _ref2.apply(this, arguments);
@@ -564,27 +562,24 @@ var deleteAccount = /*#__PURE__*/function () {
         case 0:
           _context8.prev = 0;
           password = req.body.password;
-          console.log({
-            password: password
-          });
           if (password) {
-            _context8.next = 5;
+            _context8.next = 4;
             break;
           }
           return _context8.abrupt("return", res.status(400).json({
             message: 'Faltan datos'
           }));
-        case 5:
+        case 4:
           rUser = res.locals.user;
           if (rUser) {
-            _context8.next = 8;
+            _context8.next = 7;
             break;
           }
           return _context8.abrupt("return", res.status(400).json({
             message: 'Sesión invalida'
           }));
-        case 8:
-          _context8.next = 10;
+        case 7:
+          _context8.next = 9;
           return _DataUser.DataUser.findOne({
             where: {
               user: {
@@ -599,51 +594,84 @@ var deleteAccount = /*#__PURE__*/function () {
               user: true
             }
           });
-        case 10:
+        case 9:
           user = _context8.sent;
           if (user) {
-            _context8.next = 13;
+            _context8.next = 12;
             break;
           }
           return _context8.abrupt("return", res.status(400).json({
             message: 'Sesión invalida'
           }));
-        case 13:
-          _context8.next = 15;
+        case 12:
+          _context8.next = 14;
           return _bcrypt["default"].compare(password, user.user.usuPassword);
-        case 15:
+        case 14:
           match = _context8.sent;
           if (match) {
-            _context8.next = 18;
+            _context8.next = 17;
             break;
           }
           return _context8.abrupt("return", res.status(400).json({
             message: 'Contraseña incorrecta'
           }));
-        case 18:
+        case 17:
           (0, _helpers.delFile)(user.datPhoto || '');
-          _context8.next = 21;
+          _context8.next = 20;
           return user.remove();
-        case 21:
+        case 20:
           return _context8.abrupt("return", res.status(200).json({
             message: 'Cuenta eliminada'
           }));
-        case 24:
-          _context8.prev = 24;
+        case 23:
+          _context8.prev = 23;
           _context8.t0 = _context8["catch"](0);
           console.log(_context8.t0);
           return _context8.abrupt("return", res.status(400).json({
             message: 'Error al eliminar la cuenta',
             e: _context8.t0
           }));
-        case 28:
+        case 27:
         case "end":
           return _context8.stop();
       }
-    }, _callee8, null, [[0, 24]]);
+    }, _callee8, null, [[0, 23]]);
   }));
   return function deleteAccount(_x15, _x16) {
     return _ref9.apply(this, arguments);
   };
 }();
+
+// export const setProfile: HandleRequest<{
+//   profile?: Profile
+// }> = async (req, res) => {
+//   try {
+//     const { profile } = req.body
+//     if (!profile) {
+//       return res.status(400).json({ message: 'Faltan datos' })
+//     }
+
+//     const rUser = res.locals.user
+//     if (!rUser) return res.status(400).json({ message: 'Sesión invalida' })
+
+//     const user = await User.findOne({
+//       where: {
+//         usuId: rUser.usuId,
+//       },
+//     })
+
+//     if (!user) {
+//       return res.status(400).json({ message: 'Sesión invalida' })
+//     }
+
+//     user.usuProfile = profile
+
+//     await user.save()
+
+//     return res.status(200).json({ message: 'Perfil actualizado' })
+//   } catch (e) {
+//     console.log(e)
+//     return res.status(400).json({ message: 'Error al actualizar el perfil', e })
+//   }
+// }
 exports.deleteAccount = deleteAccount;
