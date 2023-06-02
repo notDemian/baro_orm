@@ -37,6 +37,11 @@ export const BARO_SUBSCRIPTIONS = {
 } as const
 export type SUBSCRIPTIONS = keyof typeof BARO_SUBSCRIPTIONS
 
-export const PROFILES = {}
+export const PROFILES = {
+  1: 'ESTUDIANTE',
+  2: 'TRABAJADOR',
+  3: 'ADMINISTRADOR_DOMESTICO',
+  4: 'PERSONALIZADO',
+} as const
 
 export type Profile = keyof typeof PROFILES

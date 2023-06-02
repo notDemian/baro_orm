@@ -4,7 +4,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" =
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.updateUser = exports.updatePhoto = exports.logout = exports.loginUser = exports.deleteAccount = exports.createUser = exports.cleanAccount = exports._getAllUsers = void 0;
+exports.updateUser = exports.updatePhoto = exports.setProfile = exports.logout = exports.loginUser = exports.deleteAccount = exports.createUser = exports.cleanAccount = exports._getAllUsers = void 0;
 var _DataUser = require("../entitys/DataUser.js");
 var _Semanas = require("../entitys/Semanas.js");
 var _User = require("../entitys/User.js");
@@ -641,37 +641,74 @@ var deleteAccount = /*#__PURE__*/function () {
     return _ref9.apply(this, arguments);
   };
 }();
-
-// export const setProfile: HandleRequest<{
-//   profile?: Profile
-// }> = async (req, res) => {
-//   try {
-//     const { profile } = req.body
-//     if (!profile) {
-//       return res.status(400).json({ message: 'Faltan datos' })
-//     }
-
-//     const rUser = res.locals.user
-//     if (!rUser) return res.status(400).json({ message: 'Sesión invalida' })
-
-//     const user = await User.findOne({
-//       where: {
-//         usuId: rUser.usuId,
-//       },
-//     })
-
-//     if (!user) {
-//       return res.status(400).json({ message: 'Sesión invalida' })
-//     }
-
-//     user.usuProfile = profile
-
-//     await user.save()
-
-//     return res.status(200).json({ message: 'Perfil actualizado' })
-//   } catch (e) {
-//     console.log(e)
-//     return res.status(400).json({ message: 'Error al actualizar el perfil', e })
-//   }
-// }
 exports.deleteAccount = deleteAccount;
+var setProfile = /*#__PURE__*/function () {
+  var _ref10 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee9(req, res) {
+    var profile, rUser, user;
+    return _regeneratorRuntime().wrap(function _callee9$(_context9) {
+      while (1) switch (_context9.prev = _context9.next) {
+        case 0:
+          _context9.prev = 0;
+          profile = req.body.profile;
+          if (profile) {
+            _context9.next = 4;
+            break;
+          }
+          return _context9.abrupt("return", res.status(400).json({
+            message: 'Faltan datos'
+          }));
+        case 4:
+          rUser = res.locals.user;
+          if (rUser) {
+            _context9.next = 7;
+            break;
+          }
+          return _context9.abrupt("return", res.status(400).json({
+            message: 'Sesión invalida'
+          }));
+        case 7:
+          _context9.next = 9;
+          return _User.User.findOne({
+            where: {
+              usuId: rUser.usuId
+            },
+            relations: {
+              dataUser: true
+            }
+          });
+        case 9:
+          user = _context9.sent;
+          if (user) {
+            _context9.next = 12;
+            break;
+          }
+          return _context9.abrupt("return", res.status(400).json({
+            message: 'Sesión invalida'
+          }));
+        case 12:
+          user.dataUser.datProfile = profile;
+          _context9.next = 15;
+          return user.dataUser.save();
+        case 15:
+          return _context9.abrupt("return", res.status(200).json({
+            message: 'Perfil actualizado'
+          }));
+        case 18:
+          _context9.prev = 18;
+          _context9.t0 = _context9["catch"](0);
+          console.log(_context9.t0);
+          return _context9.abrupt("return", res.status(400).json({
+            message: 'Error al actualizar el perfil',
+            e: _context9.t0
+          }));
+        case 22:
+        case "end":
+          return _context9.stop();
+      }
+    }, _callee9, null, [[0, 18]]);
+  }));
+  return function setProfile(_x17, _x18) {
+    return _ref10.apply(this, arguments);
+  };
+}();
+exports.setProfile = setProfile;

@@ -19,5 +19,6 @@ router.post(_ROUTES.userRoutes.updatePhoto, [_Errors.authUser], (0, _multer["def
 router.get(_ROUTES.userRoutes.logout, _userControllers.logout);
 router.post(_ROUTES.userRoutes.deleteAccount, [_Errors.authUser], _userControllers.deleteAccount);
 router.get(_ROUTES.userRoutes.cleanAccount, [_Errors.authUser], _userControllers.cleanAccount);
+router.post(_ROUTES.userRoutes.setProfile, [_Errors.authUser], _userControllers.setProfile);
 var _default = router;
 exports["default"] = _default;

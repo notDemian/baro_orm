@@ -7,6 +7,7 @@ import {
   deleteAccount,
   loginUser,
   logout,
+  setProfile,
   updatePhoto,
   updateUser,
 } from '@controllers/user.controllers'
@@ -34,5 +35,7 @@ router.get(userRoutes.logout, logout)
 
 router.post(userRoutes.deleteAccount, [authUser], deleteAccount)
 router.get(userRoutes.cleanAccount, [authUser], cleanAccount)
+
+router.post(userRoutes.setProfile, [authUser], setProfile)
 
 export default router

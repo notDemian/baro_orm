@@ -354,35 +354,38 @@ export const deleteAccount: HandleRequest<{ password?: string }> = async (
   }
 }
 
-// export const setProfile: HandleRequest<{
-//   profile?: Profile
-// }> = async (req, res) => {
-//   try {
-//     const { profile } = req.body
-//     if (!profile) {
-//       return res.status(400).json({ message: 'Faltan datos' })
-//     }
+export const setProfile: HandleRequest<{
+  profile?: Profile
+}> = async (req, res) => {
+  try {
+    const { profile } = req.body
+    if (!profile) {
+      return res.status(400).json({ message: 'Faltan datos' })
+    }
 
-//     const rUser = res.locals.user
-//     if (!rUser) return res.status(400).json({ message: 'Sesión invalida' })
+    const rUser = res.locals.user
+    if (!rUser) return res.status(400).json({ message: 'Sesión invalida' })
 
-//     const user = await User.findOne({
-//       where: {
-//         usuId: rUser.usuId,
-//       },
-//     })
+    const user = await User.findOne({
+      where: {
+        usuId: rUser.usuId,
+      },
+      relations: {
+        dataUser: true,
+      },
+    })
 
-//     if (!user) {
-//       return res.status(400).json({ message: 'Sesión invalida' })
-//     }
+    if (!user) {
+      return res.status(400).json({ message: 'Sesión invalida' })
+    }
 
-//     user.usuProfile = profile
+    user.dataUser.datProfile = profile
 
-//     await user.save()
+    await user.dataUser.save()
 
-//     return res.status(200).json({ message: 'Perfil actualizado' })
-//   } catch (e) {
-//     console.log(e)
-//     return res.status(400).json({ message: 'Error al actualizar el perfil', e })
-//   }
-// }
+    return res.status(200).json({ message: 'Perfil actualizado' })
+  } catch (e) {
+    console.log(e)
+    return res.status(400).json({ message: 'Error al actualizar el perfil', e })
+  }
+}
