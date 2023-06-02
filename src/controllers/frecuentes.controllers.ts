@@ -4,6 +4,7 @@
 import { CobrosFreq } from '@entitys/CobrosFreq'
 import { Day } from '@entitys/Day'
 import { Frecuentes } from '@entitys/Frecuentes'
+import { Notification } from '@entitys/Notification'
 import { Semanas } from '@entitys/Semanas'
 import { User } from '@entitys/User'
 import axios from 'axios'
@@ -18,7 +19,7 @@ import { Frecuente } from '../utils/types/Frecuentes/controller'
 import { API_IA_URL, SECRET } from '@config/config'
 import { FORMATS, getSemStart } from '@utils/Dates'
 import { isNumber } from '@utils/Numbers'
-import { getPriorityColor } from '@utils/helpers'
+import { getFreqNotification, getPriorityColor } from '@utils/helpers'
 import { DayRow } from '@utils/types/Day/controller'
 import {
   COLORS_FREQ,
@@ -48,7 +49,7 @@ export const POST_freq: HandleRequest<GastoFrecuente> = async (req, res) => {
       return res.status(400).json({ message: 'Datos incompletos' })
     }
 
-    const Today = moment(date)
+    const Today = moment()
     if (!Today.isValid()) {
       return res.status(400).json({ message: 'Fecha no válida' })
     }
@@ -70,7 +71,7 @@ export const POST_freq: HandleRequest<GastoFrecuente> = async (req, res) => {
 
       if (!semanaFound) {
         const endOfWeek = Today.endOf('week').format(FORMATS.SIMPLE_DATE)
-        const semanaCreated = await Semanas.create({
+        const semanaCreated = Semanas.create({
           semStart: startOfWeek,
           semEnd: endOfWeek,
           user: { usuId: rUser.usuId },
@@ -111,7 +112,6 @@ export const POST_freq: HandleRequest<GastoFrecuente> = async (req, res) => {
         `${API_IA_URL}/api/classification/freq`,
         freqCreated
       )
-      console.log({ data: resIA.data })
       if (resIA && resIA.data && resIA.data.classification)
         freqCreated.freCategory = resIA.data.classification
     } catch (error) {
@@ -119,6 +119,16 @@ export const POST_freq: HandleRequest<GastoFrecuente> = async (req, res) => {
     }
 
     const insertFreq = await freqCreated.save()
+
+    const firstCobDate = date
+
+    const cobroCreated = CobrosFreq.create({
+      cobDate: firstCobDate,
+      frecuente: insertFreq,
+    })
+
+    const insertCobro = await cobroCreated.save()
+
     return res.status(201).json({
       message: 'Gasto creado',
       gasto: insertFreq,
@@ -135,7 +145,7 @@ export const GET_ALL_freq: HandleRequest = async (req, res) => {
     if (!rUser) return res.status(400).json({ message: 'Sesión invalida' })
 
     const frecuentesFound = await Frecuentes.find({
-      relations: { day: true },
+      relations: { day: true, cobros: true },
       where: { user: { usuId: rUser.usuId } },
     })
 
@@ -151,30 +161,32 @@ export const GET_ALL_freq: HandleRequest = async (req, res) => {
     const notifications: string[] = []
 
     for (const freq of frecuentesFound) {
-      let lastCobDate: string = freq.day.dayDate
-      const cobroFound = await CobrosFreq.findOne({
-        where: { frecuente: { freId: freq.freId } },
-        order: { cobDate: 'DESC' },
-      })
-      if (cobroFound) {
-        lastCobDate = cobroFound.cobDate
-      }
-      const lastCobDay = moment(lastCobDate)
+      const cobroFound = freq.cobros.sort(
+        (a, b) => moment(b.cobDate).unix() - moment(a.cobDate).unix()
+      )[0]
 
-      const nextCob = LAPSES_TO_INT[freq.freLapse](lastCobDay)
+      const nextCob = moment(cobroFound.cobDate)
       const daysTillNextCob = nextCob.diff(Day, 'days') + 1
-      if (daysTillNextCob <= 0) {
+
+      /* if (daysTillNextCob <= 0) {
         const cobroCreated = CobrosFreq.create({
           cobDate: nextCob.format(FORMATS.SIMPLE_DATE),
           frecuente: { freId: freq.freId },
         })
 
-        await cobroCreated.save()
 
-        notifications.push(
-          `Se ha cobrado ${freq.freName} por $${freq.freAmount}`
-        )
-      }
+        const cobroSaved = await cobroCreated.save()
+
+        const noti = getFreqNotification(freq.freName, freq.freAmount)
+
+        const notiCreated = Notification.create({
+          notContent: noti,
+        })
+
+        const notiSaved = await notiCreated.save()
+
+        notifications.push(noti)
+      } */
 
       const nextCobDate = nextCob.format(FORMATS.SIMPLE_DATE)
 
@@ -285,13 +297,11 @@ export const PUT_freq: HandleRequest<
       freqFound.freDescription = description
     }
 
-    console.log({ freqFound })
-
-    await freqFound.save()
+    const freqEdited = await freqFound.save()
 
     return res
       .status(200)
-      .json({ message: 'Gasto frecuente', gasto: freqFound })
+      .json({ message: 'Gasto frecuente', gasto: freqEdited })
   } catch (error) {
     console.log(error)
     return res.status(500).json({ message: 'Error al obtener el gasto' })
@@ -352,9 +362,57 @@ export const getCobrosFreq: HandleRequest<undefined, { id?: unknown }> = async (
       return res.status(404).json({ message: 'Gasto frecuente no encontrado' })
     }
 
+    freqFound.cobros = freqFound.cobros.sort((a, b) => {
+      return moment(a.cobDate).unix() - moment(b.cobDate).unix()
+    })
+    // delete last cobro
+    freqFound.cobros.pop()
+
     return res
       .status(200)
       .json({ message: 'Cobros obtenidos', freq: freqFound })
+  } catch (error) {
+    console.log(error)
+    return res.status(500).json({ message: 'Error al obtener los cobros' })
+  }
+}
+
+export const setCobroFreqAmount: HandleRequest<
+  { monto: number },
+  { id?: unknown }
+> = async (req, res) => {
+  try {
+    const { id } = req.params
+    const { monto } = req.body
+    if (!id || !isNumber(id)) {
+      return res.status(400).json({ message: 'Id no válido' })
+    }
+    if (!monto || !isNumber(monto)) {
+      return res.status(400).json({ message: 'Monto no válido' })
+    }
+
+    const rUser = res.locals.user
+    if (!rUser) return res.status(400).json({ message: 'Sesión invalida' })
+
+    const cobroFound = await CobrosFreq.findOne({
+      where: { cobId: id },
+    })
+
+    if (!cobroFound) {
+      return res.status(404).json({ message: 'Cobro no encontrado' })
+    }
+
+    const cobMoment = moment(cobroFound.cobDate)
+    // no se puede modificar un cobro que ya paso
+    if (cobMoment.isBefore(moment())) {
+      return res.status(400).json({ message: 'Cobro ya pasado' })
+    }
+
+    cobroFound.cobAmount = monto
+
+    const cobro = await cobroFound.save()
+
+    return res.status(200).json({ message: 'Cobro agregado', cobro })
   } catch (error) {
     console.log(error)
     return res.status(500).json({ message: 'Error al obtener los cobros' })

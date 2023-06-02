@@ -84,10 +84,6 @@ export class Frecuentes extends BaseEntity {
   @JoinColumn()
   user: User
 
-  @OneToMany(() => CobrosFreq, (cobros) => cobros.frecuente, {
-    cascade: true,
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE'
-  })
+  @OneToMany(() => CobrosFreq, (cobros) => cobros.frecuente)
   cobros: CobrosFreq[]
 }

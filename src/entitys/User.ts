@@ -11,6 +11,7 @@ import { Semanas } from './Semanas'
 import { Frecuentes } from './Frecuentes'
 import { Ingresos } from './Ingresos'
 import { DataUser } from './DataUser'
+import { Notification as NotificationBD } from './Notification'
 
 @Entity({
   name: 'usuario'
@@ -51,8 +52,9 @@ export class User extends BaseEntity {
   @OneToMany(() => Frecuentes, (freq) => freq.user)
   frecuentes: Frecuentes[]
 
-
-
   @OneToMany(() => Ingresos, (ing) => ing.user)
   ingresos: Ingresos[]
+
+  @OneToMany(() => NotificationBD, (not) => not.user)
+  notifications: NotificationBD[]
 }

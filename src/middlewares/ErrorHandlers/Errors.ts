@@ -1,8 +1,6 @@
-import { User } from '@entitys/User'
-import { NextFunction, Response } from 'express'
 import jwt from 'jsonwebtoken'
 
-import { HandleReqWithMulter, HandleRequest } from '../../utils/types/helpers'
+import { HandleRequest } from '../../utils/types/helpers'
 
 import { SECRET } from '@config/config'
 import { delFile } from '@utils/helpers'
@@ -12,15 +10,12 @@ export const authUser: HandleRequest = (req, res, next) => {
   const filename = req.file?.filename
   try {
     const token = req.get('token')
-    console.log({ token })
     if (!token || token === '') {
       filename && delFile(filename)
       return res.status(401).json({ message: 'Token de acceso no válido' })
     }
     const jwt_: unknown = jwt.verify(token, SECRET)
     const decodedUser = z_UserToken.safeParse(jwt_)
-
-    console.log({ decodedUser, jwt_ })
 
     if (!decodedUser.success) {
       filename && delFile(filename)

@@ -6,6 +6,7 @@ import jwt from 'jsonwebtoken'
 
 import { SECRET } from '@config/config'
 import { delFile } from '@utils/helpers'
+import { Profile } from '@utils/types/User/controller'
 import {
   HandleReqWithMulter,
   HandleRequest,
@@ -63,8 +64,6 @@ export const createUser: HandleReqWithMulter<{
     // if (!req.file) {
     //   return res.status(400).json({ message: 'No hay archivo' })
     // }
-    console.log('file ->', req.file)
-    console.log('body ->', req.body)
     const { filename } = req.file ?? { filename: 'default.png' }
 
     const encryptedPassword = await bcrypt.hash(contrasena, 10)
@@ -315,7 +314,6 @@ export const deleteAccount: HandleRequest<{ password?: string }> = async (
 ) => {
   try {
     const { password } = req.body
-    console.log({ password })
     if (!password) {
       return res.status(400).json({ message: 'Faltan datos' })
     }
@@ -355,3 +353,36 @@ export const deleteAccount: HandleRequest<{ password?: string }> = async (
     return res.status(400).json({ message: 'Error al eliminar la cuenta', e })
   }
 }
+
+// export const setProfile: HandleRequest<{
+//   profile?: Profile
+// }> = async (req, res) => {
+//   try {
+//     const { profile } = req.body
+//     if (!profile) {
+//       return res.status(400).json({ message: 'Faltan datos' })
+//     }
+
+//     const rUser = res.locals.user
+//     if (!rUser) return res.status(400).json({ message: 'Sesión invalida' })
+
+//     const user = await User.findOne({
+//       where: {
+//         usuId: rUser.usuId,
+//       },
+//     })
+
+//     if (!user) {
+//       return res.status(400).json({ message: 'Sesión invalida' })
+//     }
+
+//     user.usuProfile = profile
+
+//     await user.save()
+
+//     return res.status(200).json({ message: 'Perfil actualizado' })
+//   } catch (e) {
+//     console.log(e)
+//     return res.status(400).json({ message: 'Error al actualizar el perfil', e })
+//   }
+// }

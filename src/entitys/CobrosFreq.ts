@@ -27,13 +27,18 @@ export class CobrosFreq extends BaseEntity {
 
   @Column({
     name: 'cobAmount',
-    type: 'int',
+    type: 'float',
     nullable: true,
     default: null
   })
-  cobAmount!: number
+  cobAmount: number | null
 
-  @ManyToOne(() => Frecuentes, (freq) => freq.cobros)
+  @ManyToOne(() => Frecuentes, (freq) => freq.cobros, {
+    cascade: true,
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE'
+
+  })
   @JoinColumn()
   frecuente: Frecuentes
 }

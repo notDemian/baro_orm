@@ -111,7 +111,6 @@ export const createGastoDiario: HandleRequest<{
     })
 
     try {
-      console.log({ API_IA_URL })
       const resIA = await axios.post<GetClassificationResponse>(
         `${API_IA_URL}/api/classification/dia`,
         diario,
@@ -119,7 +118,6 @@ export const createGastoDiario: HandleRequest<{
           timeout: 100_000,
         }
       )
-      console.log({ data: resIA.data })
       if (resIA && resIA.data && resIA.data.classification)
         diario.diaCategory = resIA.data.classification
     } catch (err: any) {
@@ -143,6 +141,8 @@ export const getGastos: HandleRequest = async (req, res) => {
     const rUser = res.locals.user
     if (!rUser) return res.status(400).json({ message: 'Sesión invalida' })
 
+    const today = moment().format(FORMATS.SIMPLE_DATE)
+
     // get last semana days
     const gastos = await Diarios.find({
       where: {
@@ -152,6 +152,7 @@ export const getGastos: HandleRequest = async (req, res) => {
               usuId: rUser.usuId,
             },
           },
+          dayDate: today,
         },
       },
       relations: {
@@ -277,10 +278,6 @@ export const getSemanas: HandleRequest<{}, { semana?: string }> = async (
         .where('day.semanaSemId = :semId', { semId })
         .getRawOne()
 
-      console.log({
-        sum,
-        prevWeekFound,
-      })
       totalLastWeek = sum
     }
 
@@ -326,10 +323,6 @@ export const getSemanas: HandleRequest<{}, { semana?: string }> = async (
     stadisticInfo.avgWeek = totalWeek / finalDays.length
 
     stadisticInfo.vsLastWeek = totalLastWeek - totalWeek
-
-    console.log({
-      finalDays,
-    })
 
     return res.status(200).json({
       message: 'semanas recuperadas exitosamente',

@@ -2,6 +2,7 @@ import moment, { Moment } from 'moment'
 import type { RowDataPacket } from 'mysql2'
 
 export const LAPSES_TO_INT = {
+  Diario: (date: Moment | string) => moment(date).add(1, 'day'),
   Semanal: (date: Moment | string) => moment(date).add(1, 'week'),
   Quincenal: (date: Moment | string) => moment(date).add(2, 'week'),
   Mensual: (date: Moment | string) => moment(date).add(1, 'month'),
@@ -41,3 +42,11 @@ export type GastoFrecuente = {
   date: string
   description?: string
 }
+
+export const STATUS_FRECUENTE = {
+  LEIDO: 'LEIDO',
+  NO_LEIDO: 'NO_LEIDO',
+} as const
+
+export type STATUS_FRECUENTE_TYPE =
+  (typeof STATUS_FRECUENTE)[keyof typeof STATUS_FRECUENTE]

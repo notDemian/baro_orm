@@ -7,19 +7,26 @@ import {
   POST_freq,
   PUT_freq,
   getCobrosFreq,
+  setCobroFreqAmount,
 } from '@controllers/frecuentes.controllers'
 import { authUser } from '@middlewares/ErrorHandlers/Errors'
+import { frecuentesRoutes } from '@utils/ROUTES'
 
 const router = Router()
 
-router.route('/').get(authUser, GET_ALL_freq).post(authUser, POST_freq)
+router
+  .route(frecuentesRoutes.index)
+  .get(authUser, GET_ALL_freq)
+  .post(authUser, POST_freq)
 
 router
-  .route('/:id')
+  .route(frecuentesRoutes.id)
   .get(authUser, GET_freq)
   .put(authUser, PUT_freq)
   .delete(authUser, DELETE_freq)
 
-router.get('/getCobrosFreq/:id', [authUser], getCobrosFreq)
+router.get(frecuentesRoutes.getCobrosFreq, [authUser], getCobrosFreq)
+
+router.put(frecuentesRoutes.setCobrosFreqMonto, [authUser], setCobroFreqAmount)
 
 export default router

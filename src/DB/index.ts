@@ -4,6 +4,7 @@ import { Day } from '@entitys/Day'
 import { Diarios } from '@entitys/Diarios'
 import { Frecuentes } from '@entitys/Frecuentes'
 import { Ingresos } from '@entitys/Ingresos'
+import { Notification } from '@entitys/Notification'
 import { Semanas } from '@entitys/Semanas'
 import { User } from '@entitys/User'
 import { DataSource } from 'typeorm'
@@ -34,8 +35,9 @@ export const AppDataSource = new DataSource({
     Frecuentes,
     CobrosFreq,
     Ingresos,
+    Notification,
   ],
-  logging: true,
+  // logging: true,
   synchronize: true,
   // migrations: ['src/migrations/*.ts'],
   // migrationsTableName: 'migrations_bd_baro',

@@ -12,26 +12,27 @@ import {
 } from '@controllers/user.controllers'
 import { authUser } from '@middlewares/ErrorHandlers/Errors'
 import multer from '@middlewares/multer'
+import { userRoutes } from '@utils/ROUTES'
 import { HandleRequest } from '@utils/types/helpers'
 
 const router = Router()
 
-router.get('/', _getAllUsers)
-router.post('/', multer('pfp'), createUser as HandleRequest)
-router.post('/getUser', loginUser)
+router.get(userRoutes.index, _getAllUsers)
+router.post(userRoutes.index, multer('pfp'), createUser as HandleRequest)
+router.post(userRoutes.getUser, loginUser)
 
-router.put('/updateUser', [authUser], updateUser)
+router.put(userRoutes.updateUser, [authUser], updateUser)
 
 router.post(
-  '/updatePhoto',
+  userRoutes.updatePhoto,
   [authUser],
   multer('pfp'),
   updatePhoto as HandleRequest
 )
 
-router.get('/logout', logout)
+router.get(userRoutes.logout, logout)
 
-router.post('/deleteAccount', [authUser], deleteAccount)
-router.get('/cleanAccount', [authUser], cleanAccount)
+router.post(userRoutes.deleteAccount, [authUser], deleteAccount)
+router.get(userRoutes.cleanAccount, [authUser], cleanAccount)
 
 export default router

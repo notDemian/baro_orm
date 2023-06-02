@@ -6,7 +6,6 @@ const __public = join(__dirname, '../public')
 const storage = multer.diskStorage({
   destination: __public,
   filename: (req, file, cb) => {
-    console.log({file})
     cb(null, `${Date.now()}.${file.originalname.split('.').at(-1)}`)
   },
 })

@@ -36,3 +36,7 @@ export const BARO_SUBSCRIPTIONS = {
   B2C_Baro_Family: 'B2C_Baro_Family',
 } as const
 export type SUBSCRIPTIONS = keyof typeof BARO_SUBSCRIPTIONS
+
+export const PROFILES = {}
+
+export type Profile = keyof typeof PROFILES

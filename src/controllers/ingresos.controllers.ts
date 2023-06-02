@@ -41,8 +41,6 @@ export const updateIngreso: HandleRequest<UpdateIngresoBody> = async (
 
     const Today = moment().format(FORMATS.SIMPLE_DATE)
 
-    console.log(rUser)
-
     const [datBalance, err, userBD] = await getBalance(rUser.usuId)
 
     if (datBalance === undefined || userBD === undefined)
